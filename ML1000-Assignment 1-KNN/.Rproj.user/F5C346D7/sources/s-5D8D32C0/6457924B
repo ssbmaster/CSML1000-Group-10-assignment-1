@@ -1,0 +1,26 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1581275924334.000,
+    "dirty" : true,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "6457924B",
+    "lastKnownWriteTime" : 1581276795,
+    "last_content_update" : 1581281660311,
+    "path" : "C:/Users/posborne/OneDrive - York University/Desktop/Certificate in Machine Learning/#R Projects/Assignment 1 Git/CSML1000-Group-10-assignment-1/ML1000-Assignment 1-KNN/ML1000-Assignment 1-KNN.R",
+    "project_path" : "ML1000-Assignment 1-KNN.R",
+    "properties" : {
+        "cursorPosition" : "31,0",
+        "scrollLine" : "8",
+        "tempName" : "Untitled1"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
