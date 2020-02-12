@@ -1,13 +1,14 @@
-crashes_data_clean <- read.csv('../motor_vehicle_collisions_crashes_cleaned.csv')
+crashes_data_clean <- read.csv('../data/motor_vehicle_collisions_crashes_cleaned.csv')
 
 #crashes_data_clean <- crashes_data[!(is.na(crashes_data$ZIP.CODE)),]
 
 library(dplyr)
 
 
+
 ## Drop 3rd,4th and 5th columns of the dataframe
 crashes_data_select <- select(crashes_data_clean,-c(1,3, 9, 10))
-num_crashes <- crashes_data_clean$total_number_of_crashes
+crash_nocrash <- crashes_data_clean$did_crash_happen
 
 ##round to 3 decimal places
 #crashes_data_select$LATITUDE <- round(crashes_data_select$LATITUDE, digits=3)
@@ -44,25 +45,37 @@ smp_size <- floor(0.80 * nrow(crashes_data_select))
 train_ind <- sample(seq_len(nrow(crashes_data_select)), size = smp_size)
 
 # creating test and training sets that contain all of the predictors
-crashes_pred_train <- crashes_data_select[train_ind, ]
-crashes_pred_test <- crashes_data_select[-train_ind, ]
+crashes_pred_test <- crashes_data_select[train_ind, ]
+crashes_pred_train <- crashes_data_select[-train_ind, ]
 
-num_crashes <- as.data.frame(num_crashes)
+crash_nocrash <- as.data.frame(crash_nocrash)
 
 #Split outcome variable into training and test sets using the same partition as above.
-num_crashes_train <- num_crashes[train_ind, ]
-num_crashes_test <- num_crashes[-train_ind, ]
+crash_nocrash_test <- crash_nocrash[train_ind, ]
+crash_nocrash_train <- crash_nocrash[-train_ind, ]
 
-install.packages("FNN")
 library(FNN)
-knn_output <- knn.reg(crashes_pred_train, crashes_pred_test, num_crashes_train, k = 4)
+knn_output <- knn.reg(crashes_pred_train, crashes_pred_test, crash_nocrash_train, k = 4)
 print(knn_output)
 
 
 #plot(crashes_pred_test, knn_output$pred, xlab="y", ylab=expression(hat(y)))
-install.packages("ggplot")
-plot(crashes_pred_test, knn_output$pred, xlab="y", ylab=expression(hat(y)))
 
+plot(crash_nocrash_test, knn_output$pred, xlab="y", ylab=expression(hat(y)))
+
+
+##create confusion matrix
+tab <- table(knn_output$pred,crash_nocrash_test)
+
+##this function divides the correct predictions by total number of predictions that tell us how accurate teh model is.
+
+accuracy <- function(x){sum(diag(x)/(sum(rowSums(x)))) * 100}
+accuracy(tab)
+
+#mean square prediction error
+mean((crash_nocrash_test - knn_output$pred) ^ 2)
+
+table(tab)
 
 # Num of zip codes in clean data
 #as.data.frame(table(crashes_data_clean$ZIP.CODE))
