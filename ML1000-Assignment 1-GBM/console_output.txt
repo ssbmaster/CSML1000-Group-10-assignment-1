@@ -1,0 +1,882 @@
+> model_gbm
+Stochastic Gradient Boosting 
+
+672194 samples
+     7 predictor
+     2 classes: 'no', 'yes' 
+
+No pre-processing
+Resampling: Cross-Validated (3 fold) 
+Summary of sample sizes: 448129, 448130, 448129 
+Resampling results across tuning parameters:
+
+  interaction.depth  n.trees  ROC        Sens       Spec     
+   5                  25      0.6970444  0.5719599  0.7204497
+   5                  50      0.7135116  0.5998863  0.7117648
+   5                 100      0.7237724  0.6137841  0.7133566
+  10                  25      0.7092091  0.6105351  0.6975546
+  10                  50      0.7225141  0.6214277  0.7031541
+  10                 100      0.7292487  0.6276670  0.7087805
+
+Tuning parameter 'shrinkage' was held constant at a value of 0.1
+Tuning
+ parameter 'n.minobsinnode' was held constant at a value of 10
+ROC was used to select the optimal model using the largest value.
+The final values used for the model were n.trees = 100, interaction.depth =
+ 10, shrinkage = 0.1 and n.minobsinnode = 10.
+> pred.model_gbm.prob = predict(model_gbm, newdata = testData, type="prob")
+> pred.model_gbm.prob
+           no       yes
+1   0.5589960 0.4410040
+2   0.6704911 0.3295089
+3   0.7197525 0.2802475
+4   0.7229098 0.2770902
+5   0.7062390 0.2937610
+6   0.7366940 0.2633060
+7   0.7366150 0.2633850
+8   0.6905653 0.3094347
+9   0.6327795 0.3672205
+10  0.5877933 0.4122067
+11  0.5422158 0.4577842
+12  0.5159337 0.4840663
+13  0.4767954 0.5232046
+14  0.4465654 0.5534346
+15  0.4325348 0.5674652
+16  0.4228652 0.5771348
+17  0.4115147 0.5884853
+18  0.4173339 0.5826661
+19  0.4507389 0.5492611
+20  0.4824577 0.5175423
+21  0.5363750 0.4636250
+22  0.5729298 0.4270702
+23  0.5907576 0.4092424
+24  0.6264590 0.3735410
+25  0.5805382 0.4194618
+26  0.7838476 0.2161524
+27  0.8462816 0.1537184
+28  0.8522429 0.1477571
+29  0.8331007 0.1668993
+30  0.7916345 0.2083655
+31  0.6538878 0.3461122
+32  0.5618565 0.4381435
+33  0.3932517 0.6067483
+34  0.3897410 0.6102590
+35  0.4141972 0.5858028
+36  0.4150527 0.5849473
+37  0.4018708 0.5981292
+38  0.3893039 0.6106961
+39  0.3550071 0.6449929
+40  0.3532062 0.6467938
+41  0.3413771 0.6586229
+42  0.3483289 0.6516711
+43  0.3727528 0.6272472
+44  0.4540565 0.5459435
+45  0.5249510 0.4750490
+46  0.5814386 0.4185614
+47  0.5991597 0.4008403
+48  0.6672815 0.3327185
+49  0.5805382 0.4194618
+50  0.7838476 0.2161524
+51  0.8462816 0.1537184
+52  0.8522429 0.1477571
+53  0.8331007 0.1668993
+54  0.7916345 0.2083655
+55  0.6538878 0.3461122
+56  0.5618565 0.4381435
+57  0.3907786 0.6092214
+58  0.3872758 0.6127242
+59  0.4116817 0.5883183
+60  0.4125356 0.5874644
+61  0.3993791 0.6006209
+62  0.3868397 0.6131603
+63  0.3526346 0.6473654
+64  0.3508392 0.6491608
+65  0.3390478 0.6609522
+66  0.3459772 0.6540228
+67  0.3703299 0.6296701
+68  0.4514854 0.5485146
+69  0.5223626 0.4776374
+70  0.5789111 0.4210889
+71  0.5966650 0.4033350
+72  0.6649737 0.3350263
+73  0.5805382 0.4194618
+74  0.7838476 0.2161524
+75  0.8462816 0.1537184
+76  0.8522429 0.1477571
+77  0.8331007 0.1668993
+78  0.7916345 0.2083655
+79  0.6538878 0.3461122
+80  0.5618565 0.4381435
+81  0.3907786 0.6092214
+82  0.3872758 0.6127242
+83  0.4116817 0.5883183
+84  0.4125356 0.5874644
+85  0.3993791 0.6006209
+86  0.3868397 0.6131603
+87  0.3526346 0.6473654
+88  0.3508392 0.6491608
+89  0.3390478 0.6609522
+90  0.3459772 0.6540228
+91  0.3703299 0.6296701
+92  0.4514854 0.5485146
+93  0.5223626 0.4776374
+94  0.5789111 0.4210889
+95  0.5966650 0.4033350
+96  0.6649737 0.3350263
+97  0.5883388 0.4116612
+98  0.7863456 0.2136544
+99  0.8469485 0.1530515
+100 0.8528885 0.1471115
+101 0.8351492 0.1648508
+102 0.7939916 0.2060084
+103 0.6438576 0.3561424
+104 0.5509907 0.4490093
+105 0.3772239 0.6227761
+106 0.3737681 0.6262319
+107 0.3978755 0.6021245
+108 0.3987202 0.6012798
+109 0.3857149 0.6142851
+110 0.3733379 0.6266621
+111 0.3396654 0.6603346
+112 0.3379015 0.6620985
+113 0.3263264 0.6736736
+114 0.3331267 0.6668733
+115 0.3570688 0.6429312
+116 0.4330810 0.5669190
+117 0.5037223 0.4962777
+118 0.5606213 0.4393787
+119 0.5785850 0.4214150
+120 0.6506580 0.3493420
+121 0.5626868 0.4373132
+122 0.7627265 0.2372735
+123 0.8203398 0.1796602
+124 0.8271016 0.1728984
+125 0.8091875 0.1908125
+126 0.7916983 0.2083017
+127 0.6434504 0.3565496
+128 0.5505515 0.4494485
+129 0.3768069 0.6231931
+130 0.3733527 0.6266473
+131 0.3974503 0.6025497
+132 0.3982947 0.6017053
+133 0.3852944 0.6147056
+134 0.3729227 0.6270773
+135 0.3392673 0.6607327
+136 0.3375045 0.6624955
+137 0.3259362 0.6740638
+138 0.3327325 0.6672675
+139 0.3538697 0.6461303
+140 0.4094528 0.5905472
+141 0.4794998 0.5205002
+142 0.5366213 0.4633787
+143 0.5547870 0.4452130
+144 0.6077373 0.3922627
+145 0.5572039 0.4427961
+146 0.6714166 0.3285834
+147 0.7205972 0.2794028
+148 0.7237487 0.2762513
+149 0.7071079 0.2928921
+150 0.7332856 0.2667144
+151 0.7224243 0.2775757
+152 0.6742797 0.3257203
+153 0.5887219 0.4112781
+154 0.5439281 0.4560719
+155 0.5087672 0.4912328
+156 0.4823979 0.5176021
+157 0.4434729 0.5565271
+158 0.4305415 0.5694585
+159 0.4166353 0.5833647
+160 0.4147228 0.5852772
+161 0.3990537 0.6009463
+162 0.4064552 0.5935448
+163 0.4254969 0.5745031
+164 0.4490791 0.5509209
+165 0.5028908 0.4971092
+166 0.5569345 0.4430655
+167 0.5749347 0.4250653
+168 0.6168055 0.3831945
+169 0.5572039 0.4427961
+170 0.6714166 0.3285834
+171 0.7205972 0.2794028
+172 0.7237487 0.2762513
+173 0.7071079 0.2928921
+174 0.7375063 0.2624937
+175 0.7374274 0.2625726
+176 0.6907712 0.3092288
+177 0.6314243 0.3685757
+178 0.5880267 0.4119733
+179 0.5424550 0.4575450
+180 0.5161744 0.4838256
+181 0.4770358 0.5229642
+182 0.4468036 0.5531964
+183 0.4327713 0.5672287
+184 0.4231005 0.5768995
+185 0.4073351 0.5926649
+186 0.4147842 0.5852158
+187 0.4509775 0.5490225
+188 0.4826983 0.5173017
+189 0.5366146 0.4633854
+190 0.5731655 0.4268345
+191 0.5909906 0.4090094
+192 0.6266845 0.3733155
+193 0.5781171 0.4218829
+194 0.7821597 0.2178403
+195 0.8449848 0.1550152
+196 0.8509876 0.1490124
+197 0.8317148 0.1682852
+198 0.7899910 0.2100090
+199 0.6516360 0.3483640
+200 0.5594094 0.4405906
+201 0.3908839 0.6091161
+202 0.3873808 0.6126192
+203 0.4117888 0.5882112
+204 0.4126428 0.5873572
+205 0.3994852 0.6005148
+206 0.3869446 0.6130554
+207 0.3527356 0.6472644
+208 0.3509400 0.6490600
+209 0.3391470 0.6608530
+210 0.3460772 0.6539228
+211 0.3704330 0.6295670
+212 0.4515949 0.5484051
+213 0.5224730 0.4775270
+214 0.5790189 0.4209811
+215 0.5967714 0.4032286
+216 0.6650722 0.3349278
+217 0.5781171 0.4218829
+218 0.7821597 0.2178403
+219 0.8449848 0.1550152
+220 0.8509876 0.1490124
+221 0.8317148 0.1682852
+222 0.7899910 0.2100090
+223 0.6516360 0.3483640
+224 0.5594094 0.4405906
+225 0.3884160 0.6115840
+226 0.3849211 0.6150789
+227 0.4092777 0.5907223
+228 0.4101301 0.5898699
+229 0.3969984 0.6030016
+230 0.3844860 0.6155140
+231 0.3503701 0.6496299
+232 0.3485800 0.6514200
+233 0.3368251 0.6631749
+234 0.3437327 0.6562673
+235 0.3680163 0.6319837
+236 0.4490264 0.5509736
+237 0.5198834 0.4801166
+238 0.5764874 0.4235126
+239 0.5942719 0.4057281
+240 0.6627568 0.3372432
+241 0.5781171 0.4218829
+242 0.7821597 0.2178403
+243 0.8449848 0.1550152
+244 0.8509876 0.1490124
+245 0.8317148 0.1682852
+246 0.7899910 0.2100090
+247 0.6516360 0.3483640
+248 0.5594094 0.4405906
+249 0.3884160 0.6115840
+250 0.3849211 0.6150789
+251 0.4092777 0.5907223
+252 0.4101301 0.5898699
+253 0.3969984 0.6030016
+254 0.3844860 0.6155140
+255 0.3503701 0.6496299
+256 0.3485800 0.6514200
+257 0.3368251 0.6631749
+258 0.3437327 0.6562673
+259 0.3680163 0.6319837
+260 0.4490264 0.5509736
+261 0.5198834 0.4801166
+262 0.5764874 0.4235126
+263 0.5942719 0.4057281
+264 0.6627568 0.3372432
+265 0.5859306 0.4140694
+266 0.7846718 0.2153282
+267 0.8456563 0.1543437
+268 0.8516376 0.1483624
+269 0.8337769 0.1662231
+270 0.7936901 0.2063099
+271 0.6434351 0.3565649
+272 0.5505350 0.4494650
+273 0.3767913 0.6232087
+274 0.3733371 0.6266629
+275 0.3974343 0.6025657
+276 0.3982787 0.6017213
+277 0.3852786 0.6147214
+278 0.3729071 0.6270929
+279 0.3392524 0.6607476
+280 0.3374896 0.6625104
+281 0.3259216 0.6740784
+282 0.3327177 0.6672823
+283 0.3566460 0.6433540
+284 0.4326289 0.5673711
+285 0.5032619 0.4967381
+286 0.5601676 0.4398324
+287 0.5781359 0.4218641
+288 0.6502392 0.3497608
+289 0.5583375 0.4416625
+290 0.7595165 0.2404835
+291 0.8177229 0.1822771
+292 0.8245622 0.1754378
+293 0.8064465 0.1935535
+294 0.7887717 0.2112283
+295 0.6393897 0.3606103
+296 0.5461789 0.4538211
+297 0.3726701 0.6273299
+298 0.3692313 0.6307687
+299 0.3932298 0.6067702
+300 0.3940711 0.6059289
+301 0.3811214 0.6188786
+302 0.3688033 0.6311967
+303 0.3353208 0.6646792
+304 0.3335682 0.6664318
+305 0.3220692 0.6779308
+306 0.3288242 0.6711758
+307 0.3498433 0.6501567
+308 0.4051906 0.5948094
+309 0.4750950 0.5249050
+310 0.5322283 0.4677717
+311 0.5504219 0.4495781
+312 0.6035204 0.3964796
+313 0.5547514 0.4452486
+314 0.6692212 0.3307788
+315 0.7185927 0.2814073
+316 0.7217580 0.2782420
+317 0.7050462 0.2949538
+318 0.7313382 0.2686618
+319 0.7204277 0.2795723
+320 0.6720940 0.3279060
+321 0.5863144 0.4136856
+322 0.5414626 0.4585374
+323 0.5062841 0.4937159
+324 0.4799178 0.5200822
+325 0.4410224 0.5589776
+326 0.4281075 0.5718925
+327 0.4142227 0.5857773
+328 0.4123135 0.5876865
+329 0.3966737 0.6033263
+330 0.4040608 0.5959392
+331 0.4230702 0.5769298
+332 0.4466225 0.5533775
+333 0.5004072 0.4995928
+334 0.5544817 0.4455183
+335 0.5725050 0.4274950
+336 0.6144547 0.3855453
+337 0.5547514 0.4452486
+338 0.6692212 0.3307788
+339 0.7185927 0.2814073
+340 0.7217580 0.2782420
+341 0.7050462 0.2949538
+342 0.7355785 0.2644215
+343 0.7354993 0.2645007
+344 0.6886451 0.3113549
+345 0.6291093 0.3708907
+346 0.5856180 0.4143820
+347 0.5399883 0.4600117
+348 0.5136930 0.4863070
+349 0.4745580 0.5254420
+350 0.4443494 0.5556506
+351 0.4303343 0.5696657
+352 0.4206774 0.5793226
+353 0.4049390 0.5950610
+354 0.4123748 0.5876252
+355 0.4485190 0.5514810
+356 0.4802181 0.5197819
+357 0.5341434 0.4658566
+358 0.5707334 0.4292666
+359 0.5885870 0.4114130
+360 0.6243574 0.3756426
+361 0.5747627 0.4252373
+362 0.7798097 0.2201903
+363 0.8403701 0.1596299
+364 0.8465191 0.1534809
+365 0.8297831 0.1702169
+366 0.7877027 0.2122973
+367 0.6485108 0.3514892
+368 0.5568174 0.4431826
+369 0.3828482 0.6171518
+370 0.3848895 0.6151105
+371 0.4092454 0.5907546
+372 0.4100978 0.5899022
+373 0.3969665 0.6030335
+374 0.3844544 0.6155456
+375 0.3503397 0.6496603
+376 0.3485497 0.6514503
+377 0.3315959 0.6684041
+378 0.3437026 0.6562974
+379 0.3679852 0.6320148
+380 0.4489934 0.5510066
+381 0.5198501 0.4801499
+382 0.5764549 0.4235451
+383 0.5942397 0.4057603
+384 0.6580008 0.3419992
+385 0.5797218 0.4202782
+386 0.7832792 0.2167208
+387 0.8430773 0.1569227
+388 0.8491407 0.1508593
+389 0.8326341 0.1673659
+390 0.7910811 0.2089189
+391 0.6531288 0.3468712
+392 0.5549203 0.4450797
+393 0.3785900 0.6214100
+394 0.3806226 0.6193774
+395 0.4048862 0.5951138
+396 0.4057358 0.5942642
+397 0.3926512 0.6073488
+398 0.3801893 0.6198107
+399 0.3462402 0.6537598
+400 0.3444601 0.6555399
+401 0.3276051 0.6723949
+402 0.3396401 0.6603599
+403 0.3637949 0.6362051
+404 0.4445294 0.5554706
+405 0.5153405 0.4846595
+406 0.5720392 0.4279608
+407 0.5898776 0.4101224
+408 0.6539249 0.3460751
+409 0.5792977 0.4207023
+410 0.7829836 0.2170164
+411 0.8428470 0.1571530
+412 0.8489177 0.1510823
+413 0.8323915 0.1676085
+414 0.7907933 0.2092067
+415 0.6500662 0.3499338
+416 0.5544905 0.4455095
+417 0.3754213 0.6245787
+418 0.3802125 0.6197875
+419 0.4044670 0.5955330
+420 0.4024871 0.5975129
+421 0.3922363 0.6077637
+422 0.3797794 0.6202206
+423 0.3431928 0.6568072
+424 0.3440673 0.6559327
+425 0.3246403 0.6753597
+426 0.3392500 0.6607500
+427 0.3606782 0.6393218
+428 0.4440998 0.5559002
+429 0.5149059 0.4850941
+430 0.5716132 0.4283868
+431 0.5894566 0.4105434
+432 0.6535311 0.3464689
+433 0.5821703 0.4178297
+434 0.7820450 0.2179550
+435 0.8408250 0.1591750
+436 0.8469597 0.1530403
+437 0.8316206 0.1683794
+438 0.7911441 0.2088559
+439 0.6371639 0.3628361
+440 0.5455975 0.4544025
+441 0.3639541 0.6360459
+442 0.3686852 0.6313148
+443 0.3926703 0.6073297
+444 0.3907103 0.6092897
+445 0.3805683 0.6194317
+446 0.3682575 0.6317425
+447 0.3321864 0.6678136
+448 0.3330470 0.6669530
+449 0.3139444 0.6860556
+450 0.3283068 0.6716932
+451 0.3494094 0.6505906
+452 0.4277425 0.5722575
+453 0.4982783 0.5017217
+454 0.5552504 0.4447496
+455 0.5732666 0.4267334
+456 0.6408565 0.3591435
+457 0.5588579 0.4411421
+458 0.7599017 0.2400983
+459 0.8170395 0.1829605
+460 0.8238989 0.1761011
+461 0.8067757 0.1932243
+462 0.7891231 0.2108769
+463 0.6371639 0.3628361
+464 0.5455975 0.4544025
+465 0.3639541 0.6360459
+466 0.3686852 0.6313148
+467 0.3926703 0.6073297
+468 0.3907103 0.6092897
+469 0.3805683 0.6194317
+470 0.3682575 0.6317425
+471 0.3321864 0.6678136
+472 0.3330470 0.6669530
+473 0.3139444 0.6860556
+474 0.3283068 0.6716932
+475 0.3466439 0.6533561
+476 0.4046255 0.5953745
+477 0.4745102 0.5254898
+478 0.5316444 0.4683556
+479 0.5498415 0.4501585
+480 0.6013567 0.3986433
+481 0.5509250 0.4490750
+482 0.6657859 0.3342141
+483 0.7160988 0.2839012
+484 0.7192813 0.2807187
+485 0.7018172 0.2981828
+486 0.7282860 0.2717140
+487 0.7149107 0.2850893
+488 0.6676858 0.3323142
+489 0.5802638 0.4197362
+490 0.5365093 0.4634907
+491 0.5013009 0.4986991
+492 0.4720150 0.5279850
+493 0.4361141 0.5638859
+494 0.4232341 0.5767659
+495 0.4065561 0.5934439
+496 0.4074918 0.5925082
+497 0.3907316 0.6092684
+498 0.3992700 0.6007300
+499 0.4153559 0.5846441
+500 0.4417011 0.5582989
+ [ reached 'max' / getOption("max.print") -- omitted 674097 rows ]
+> pred.model_gbm.raw = predict(model_gbm, newdata = testData)
+> pred.model_gbm.raw\
+Error: unexpected input in "pred.model_gbm.raw\"
+> pred.model_gbm.raw
+   [1] no  no  no  no  no  no  no  no  no  no  no  no  yes yes yes yes yes yes yes yes no  no  no  no  no  no  no  no  no  no  no  no  yes yes yes yes yes yes yes yes yes
+  [42] yes yes yes no  no  no  no  no  no  no  no  no  no  no  no  yes yes yes yes yes yes yes yes yes yes yes yes no  no  no  no  no  no  no  no  no  no  no  no  yes yes
+  [83] yes yes yes yes yes yes yes yes yes yes no  no  no  no  no  no  no  no  no  no  no  no  yes yes yes yes yes yes yes yes yes yes yes yes no  no  no  no  no  no  no 
+ [124] no  no  no  no  no  yes yes yes yes yes yes yes yes yes yes yes yes yes no  no  no  no  no  no  no  no  no  no  no  no  no  no  yes yes yes yes yes yes yes yes yes
+ [165] no  no  no  no  no  no  no  no  no  no  no  no  no  no  no  no  yes yes yes yes yes yes yes yes no  no  no  no  no  no  no  no  no  no  no  no  yes yes yes yes yes
+ [206] yes yes yes yes yes yes yes no  no  no  no  no  no  no  no  no  no  no  no  yes yes yes yes yes yes yes yes yes yes yes yes no  no  no  no  no  no  no  no  no  no 
+ [247] no  no  yes yes yes yes yes yes yes yes yes yes yes yes no  no  no  no  no  no  no  no  no  no  no  no  yes yes yes yes yes yes yes yes yes yes yes yes no  no  no 
+ [288] no  no  no  no  no  no  no  no  no  yes yes yes yes yes yes yes yes yes yes yes yes yes no  no  no  no  no  no  no  no  no  no  no  no  no  no  yes yes yes yes yes
+ [329] yes yes yes yes no  no  no  no  no  no  no  no  no  no  no  no  no  no  no  no  yes yes yes yes yes yes yes yes no  no  no  no  no  no  no  no  no  no  no  no  yes
+ [370] yes yes yes yes yes yes yes yes yes yes yes no  no  no  no  no  no  no  no  no  no  no  no  yes yes yes yes yes yes yes yes yes yes yes yes no  no  no  no  no  no 
+ [411] no  no  no  no  no  no  yes yes yes yes yes yes yes yes yes yes yes yes no  no  no  no  no  no  no  no  no  no  no  no  yes yes yes yes yes yes yes yes yes yes yes
+ [452] yes yes no  no  no  no  no  no  no  no  no  no  no  yes yes yes yes yes yes yes yes yes yes yes yes yes no  no  no  no  no  no  no  no  no  no  no  no  no  no  yes
+ [493] yes yes yes yes yes yes yes yes yes no  no  no  no  no  no  no  no  no  no  no  no  no  no  no  yes yes yes yes yes yes yes yes no  no  no  no  no  no  no  no  no 
+ [534] no  no  no  yes yes yes yes yes yes yes yes yes yes yes yes no  no  no  no  no  no  no  no  no  no  no  no  yes yes yes yes yes yes yes yes yes yes yes yes no  no 
+ [575] no  no  no  no  no  no  no  no  no  no  yes yes yes yes yes yes yes yes yes yes yes yes no  no  no  no  no  no  no  no  no  no  no  no  yes yes yes yes yes yes yes
+ [616] yes yes yes yes yes no  no  no  no  no  no  no  no  no  no  no  no  yes yes yes yes yes yes yes yes yes yes yes yes yes no  no  no  no  no  no  no  no  no  no  no 
+ [657] no  no  no  yes yes yes yes yes yes yes yes yes no  no  no  no  no  no  no  no  no  no  no  no  no  no  no  no  yes yes yes yes yes yes yes yes no  no  no  no  no 
+ [698] no  no  no  no  no  no  no  yes yes yes yes yes yes yes yes yes yes yes yes no  no  no  no  no  no  no  no  no  no  no  no  yes yes yes yes yes yes yes yes yes yes
+ [739] yes yes no  no  no  no  no  no  no  no  no  no  no  no  yes yes yes yes yes yes yes yes yes yes yes yes no  no  no  no  no  no  no  no  no  no  no  no  yes yes yes
+ [780] yes yes yes yes yes yes yes yes yes yes no  no  no  no  no  no  no  no  no  no  no  yes yes yes yes yes yes yes yes yes yes yes yes yes no  no  no  no  no  no  no 
+ [821] no  no  no  no  no  no  yes yes yes yes yes yes yes yes yes yes yes no  no  no  no  no  no  no  no  no  no  no  no  no  no  no  yes yes yes yes yes yes yes yes no 
+ [862] no  no  no  no  no  no  no  no  no  no  no  yes yes yes yes yes yes yes yes yes yes yes yes no  no  no  no  no  no  no  no  no  no  no  no  yes yes yes yes yes yes
+ [903] yes yes yes yes yes yes no  no  no  no  no  no  no  no  no  no  no  no  yes yes yes yes yes yes yes yes yes yes yes yes no  no  no  no  no  no  no  no  no  no  no 
+ [944] no  yes yes yes yes yes yes yes yes yes yes yes yes yes no  no  no  no  no  no  no  no  no  no  no  yes yes yes yes yes yes yes yes yes yes yes yes yes no  no  no 
+ [985] no  no  no  no  no  no  no  no  no  no  yes yes yes yes yes yes
+ [ reached getOption("max.print") -- omitted 673597 entries ]
+Levels: no yes
+> roc.model_gbm = pROC::roc(testData$did_crash_happen, 
++                                   as.vector(ifelse(pred.model_gbm.prob[,"yes"] >0.5, 1,0)) )
+Setting levels: control = no, case = yes
+Setting direction: controls < cases
+> roc.model_gbm
+
+Call:
+roc.default(response = testData$did_crash_happen, predictor = as.vector(ifelse(pred.model_gbm.prob[,     "yes"] > 0.5, 1, 0)))
+
+Data: as.vector(ifelse(pred.model_gbm.prob[, "yes"] > 0.5, 1, 0)) in 520573 controls (testData$did_crash_happen no) < 154024 cases (testData$did_crash_happen yes).
+Area under the curve: 0.6628
+> auc.model_gbm = pROC::auc(roc.model_gbm)
+> auc.model_gbm
+Area under the curve: 0.6628
+> model_gbm
+Stochastic Gradient Boosting 
+
+672194 samples
+     7 predictor
+     2 classes: 'no', 'yes' 
+
+No pre-processing
+Resampling: Cross-Validated (3 fold) 
+Summary of sample sizes: 448129, 448130, 448129 
+Resampling results across tuning parameters:
+
+  interaction.depth  n.trees  ROC        Sens       Spec     
+   5                  25      0.6970444  0.5719599  0.7204497
+   5                  50      0.7135116  0.5998863  0.7117648
+   5                 100      0.7237724  0.6137841  0.7133566
+  10                  25      0.7092091  0.6105351  0.6975546
+  10                  50      0.7225141  0.6214277  0.7031541
+  10                 100      0.7292487  0.6276670  0.7087805
+
+Tuning parameter 'shrinkage' was held constant at a value of 0.1
+Tuning parameter 'n.minobsinnode' was held constant at a value of 10
+ROC was used to select the optimal model using the largest value.
+The final values used for the model were n.trees = 100, interaction.depth = 10, shrinkage = 0.1 and n.minobsinnode = 10.
+> confusionMatrix(data = pred.model_gbm.raw, testData$did_crash_happen)
+Confusion Matrix and Statistics
+
+          Reference
+Prediction     no    yes
+       no  322779  45353
+       yes 197794 108671
+                                          
+               Accuracy : 0.6396          
+                 95% CI : (0.6384, 0.6407)
+    No Information Rate : 0.7717          
+    P-Value [Acc > NIR] : 1               
+                                          
+                  Kappa : 0.2415          
+                                          
+ Mcnemar's Test P-Value : <2e-16          
+                                          
+            Sensitivity : 0.6200          
+            Specificity : 0.7055          
+         Pos Pred Value : 0.8768          
+         Neg Pred Value : 0.3546          
+             Prevalence : 0.7717          
+         Detection Rate : 0.4785          
+   Detection Prevalence : 0.5457          
+      Balanced Accuracy : 0.6628          
+                                          
+       'Positive' Class : no              
+                                          
+> plot.roc(roc.model_gbm, print.auc = TRUE, auc.polygon = TRUE, col = mainPalette[2] , print.thres = "best" )
+Error in plot.xy(xy.coords(x, y), type = type, ...) : 
+  object 'mainPalette' not found
+> plot.roc(roc.model_gbm, print.auc = TRUE, col = 'red' , print.thres = "best" )
+> confusionMatrix(data = pred.model_gbm.raw, trainData_downsampled$did_crash_happen)
+Error in table(data, reference, dnn = dnn, ...) : 
+  all arguments must have the same length
+> model_gbm
+Stochastic Gradient Boosting 
+
+672194 samples
+     7 predictor
+     2 classes: 'no', 'yes' 
+
+No pre-processing
+Resampling: Cross-Validated (3 fold) 
+Summary of sample sizes: 448129, 448130, 448129 
+Resampling results across tuning parameters:
+
+  interaction.depth  n.trees  ROC        Sens       Spec     
+   5                  25      0.6970444  0.5719599  0.7204497
+   5                  50      0.7135116  0.5998863  0.7117648
+   5                 100      0.7237724  0.6137841  0.7133566
+  10                  25      0.7092091  0.6105351  0.6975546
+  10                  50      0.7225141  0.6214277  0.7031541
+  10                 100      0.7292487  0.6276670  0.7087805
+
+Tuning parameter 'shrinkage' was held constant at a value of 0.1
+Tuning parameter 'n.minobsinnode' was held constant at a value of 10
+ROC was used to select the optimal model using the largest value.
+The final values used for the model were n.trees = 100, interaction.depth = 10, shrinkage = 0.1 and n.minobsinnode = 10.
+> summary(model_gbm)
+                    var      rel.inf
+hour.L           hour.L 39.877350960
+hour.Q           hour.Q  6.953842962
+hour^5           hour^5  6.813062057
+weekday.L     weekday.L  5.340055535
+precinct22   precinct22  3.249013852
+hour.C           hour.C  2.362699060
+precinct105 precinct105  2.092488692
+precinct109 precinct109  2.084526073
+precinct100 precinct100  2.052469055
+precinct75   precinct75  1.866999702
+precinct26   precinct26  1.647784707
+precinct30   precinct30  1.611745834
+precinct28   precinct28  1.595291319
+precinct101 precinct101  1.307673676
+precinct9     precinct9  1.078281633
+precinct7     precinct7  1.041762306
+precinct24   precinct24  0.991042221
+precinct108 precinct108  0.948352061
+precinct114 precinct114  0.905394943
+hour^4           hour^4  0.877941877
+precinct88   precinct88  0.794100350
+precinct32   precinct32  0.707985143
+precinct6     precinct6  0.683520593
+precinct33   precinct33  0.677372978
+precinct23   precinct23  0.675605928
+weekday.Q     weekday.Q  0.645719063
+precinct81   precinct81  0.586418028
+precinct113 precinct113  0.563791792
+precinct19   precinct19  0.531608613
+precinct106 precinct106  0.501594401
+precinct20   precinct20  0.453120837
+hour^8           hour^8  0.417218015
+precinct107 precinct107  0.397486979
+precinct34   precinct34  0.371622693
+precinct76   precinct76  0.366477115
+precinct104 precinct104  0.355074988
+precinct42   precinct42  0.349809322
+precinct102 precinct102  0.334788397
+precinct47   precinct47  0.330935573
+precinct123 precinct123  0.282114919
+precinct41   precinct41  0.276828203
+precinct110 precinct110  0.266419433
+precinct67   precinct67  0.266231315
+week.L           week.L  0.249765384
+precinct43   precinct43  0.249443701
+precinct77   precinct77  0.236734337
+hour^11         hour^11  0.228970946
+precinct18   precinct18  0.199563175
+hour^6           hour^6  0.185270624
+precinct90   precinct90  0.177990277
+precinct50   precinct50  0.177477261
+precinct111 precinct111  0.170916829
+month.L         month.L  0.150109306
+precinct60   precinct60  0.147052873
+precinct40   precinct40  0.130223495
+precinct14   precinct14  0.129152987
+precinct115 precinct115  0.126633169
+precinct121 precinct121  0.114496290
+precinct69   precinct69  0.109630841
+precinct72   precinct72  0.107108887
+hour^22         hour^22  0.096678096
+month^11       month^11  0.089281994
+week^14         week^14  0.088686187
+precinct78   precinct78  0.087699538
+precinct44   precinct44  0.073501417
+week^5           week^5  0.071669812
+precinct5     precinct5  0.071243936
+precinct48   precinct48  0.067612771
+precinct103 precinct103  0.056528157
+week^16         week^16  0.055265710
+day^6             day^6  0.052992872
+precinct25   precinct25  0.047713956
+week.Q           week.Q  0.045759731
+precinct83   precinct83  0.041521717
+month^9         month^9  0.039275293
+week^35         week^35  0.038279154
+week^30         week^30  0.037756623
+week^15         week^15  0.035394451
+precinct79   precinct79  0.034917480
+week^4           week^4  0.032983692
+precinct122 precinct122  0.031501276
+week^9           week^9  0.026471643
+weekday.C     weekday.C  0.026217844
+precinct61   precinct61  0.025074532
+week^24         week^24  0.024305957
+precinct71   precinct71  0.024292566
+weekday^5     weekday^5  0.022949716
+hour^21         hour^21  0.022788267
+hour^15         hour^15  0.022015239
+week^31         week^31  0.021811465
+day.Q             day.Q  0.020893982
+precinct70   precinct70  0.020805689
+week^11         week^11  0.012666875
+week^17         week^17  0.011056361
+precinct94   precinct94  0.010651939
+precinct49   precinct49  0.010587166
+month^8         month^8  0.010254779
+day^24           day^24  0.009393555
+week^7           week^7  0.009331668
+week^13         week^13  0.008763956
+week^19         week^19  0.008196629
+precinct45   precinct45  0.008163917
+day^23           day^23  0.007906018
+precinct52   precinct52  0.007760846
+week^48         week^48  0.007211945
+precinct10   precinct10  0.000000000
+precinct13   precinct13  0.000000000
+precinct17   precinct17  0.000000000
+precinct46   precinct46  0.000000000
+precinct62   precinct62  0.000000000
+precinct63   precinct63  0.000000000
+precinct66   precinct66  0.000000000
+precinct68   precinct68  0.000000000
+precinct73   precinct73  0.000000000
+precinct84   precinct84  0.000000000
+precinct112 precinct112  0.000000000
+precinct120 precinct120  0.000000000
+month.Q         month.Q  0.000000000
+month.C         month.C  0.000000000
+month^4         month^4  0.000000000
+month^5         month^5  0.000000000
+month^6         month^6  0.000000000
+month^7         month^7  0.000000000
+month^10       month^10  0.000000000
+week.C           week.C  0.000000000
+week^6           week^6  0.000000000
+week^8           week^8  0.000000000
+week^10         week^10  0.000000000
+week^12         week^12  0.000000000
+week^18         week^18  0.000000000
+week^20         week^20  0.000000000
+week^21         week^21  0.000000000
+week^22         week^22  0.000000000
+week^23         week^23  0.000000000
+week^25         week^25  0.000000000
+week^26         week^26  0.000000000
+week^27         week^27  0.000000000
+week^28         week^28  0.000000000
+week^29         week^29  0.000000000
+week^32         week^32  0.000000000
+week^33         week^33  0.000000000
+week^34         week^34  0.000000000
+week^36         week^36  0.000000000
+week^37         week^37  0.000000000
+week^38         week^38  0.000000000
+week^39         week^39  0.000000000
+week^40         week^40  0.000000000
+week^41         week^41  0.000000000
+week^42         week^42  0.000000000
+week^43         week^43  0.000000000
+week^44         week^44  0.000000000
+week^45         week^45  0.000000000
+week^46         week^46  0.000000000
+week^47         week^47  0.000000000
+week^49         week^49  0.000000000
+week^50         week^50  0.000000000
+week^51         week^51  0.000000000
+week^52         week^52  0.000000000
+day.L             day.L  0.000000000
+day.C             day.C  0.000000000
+day^4             day^4  0.000000000
+day^5             day^5  0.000000000
+day^7             day^7  0.000000000
+day^8             day^8  0.000000000
+day^9             day^9  0.000000000
+day^10           day^10  0.000000000
+day^11           day^11  0.000000000
+day^12           day^12  0.000000000
+day^13           day^13  0.000000000
+day^14           day^14  0.000000000
+day^15           day^15  0.000000000
+day^16           day^16  0.000000000
+day^17           day^17  0.000000000
+day^18           day^18  0.000000000
+day^19           day^19  0.000000000
+day^20           day^20  0.000000000
+day^21           day^21  0.000000000
+day^22           day^22  0.000000000
+day^25           day^25  0.000000000
+day^26           day^26  0.000000000
+day^27           day^27  0.000000000
+day^28           day^28  0.000000000
+day^29           day^29  0.000000000
+day^30           day^30  0.000000000
+weekday^4     weekday^4  0.000000000
+weekday^6     weekday^6  0.000000000
+hour^7           hour^7  0.000000000
+hour^9           hour^9  0.000000000
+hour^10         hour^10  0.000000000
+hour^12         hour^12  0.000000000
+hour^13         hour^13  0.000000000
+hour^14         hour^14  0.000000000
+hour^16         hour^16  0.000000000
+hour^17         hour^17  0.000000000
+hour^18         hour^18  0.000000000
+hour^19         hour^19  0.000000000
+hour^20         hour^20  0.000000000
+hour^23         hour^23  0.000000000
+> model_gbm
+Stochastic Gradient Boosting 
+
+672194 samples
+     7 predictor
+     2 classes: 'no', 'yes' 
+
+No pre-processing
+Resampling: Cross-Validated (3 fold) 
+Summary of sample sizes: 448129, 448130, 448129 
+Resampling results across tuning parameters:
+
+  interaction.depth  n.trees  ROC        Sens       Spec     
+   5                  25      0.6970444  0.5719599  0.7204497
+   5                  50      0.7135116  0.5998863  0.7117648
+   5                 100      0.7237724  0.6137841  0.7133566
+  10                  25      0.7092091  0.6105351  0.6975546
+  10                  50      0.7225141  0.6214277  0.7031541
+  10                 100      0.7292487  0.6276670  0.7087805
+
+Tuning parameter 'shrinkage' was held constant at a value of 0.1
+Tuning parameter 'n.minobsinnode' was held constant at a value of 10
+ROC was used to select the optimal model using the largest value.
+The final values used for the model were n.trees = 100, interaction.depth = 10, shrinkage = 0.1 and n.minobsinnode = 10.
