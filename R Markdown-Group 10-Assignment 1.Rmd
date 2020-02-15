@@ -16,8 +16,8 @@ output:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+#2 lines below set working directory to folder .R script is saved in
 ```
-
 
 ## Abstract
 
@@ -44,7 +44,7 @@ Data dictionary sourced from https://data.cityofnewyork.us/Public-Safety/Motor-V
 
 
 ```{r echo = FALSE, results = 'asis'}
-data_dictionary <- read.csv('data_dictionary.csv')
+data_dictionary <- read.csv('/data/data_dictionary.csv')
 library(knitr)
 kable(data_dictionary[], caption = "Data Dictionary - Motor Vehicle Collisions – Crashes", format = "latex")
 ```
