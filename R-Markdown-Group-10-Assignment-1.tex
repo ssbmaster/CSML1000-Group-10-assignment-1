@@ -5,6 +5,12 @@
 \maketitle
 
 
+\begin{Schunk}
+\begin{Sinput}
+#code below IS shown in final document
+\end{Sinput}
+\end{Schunk}
+
 \hypertarget{abstract}{%
 \subsection{Abstract}\label{abstract}}
 
@@ -74,9 +80,52 @@ Data dictionary sourced from
 \url{https://data.cityofnewyork.us/Public-Safety/Motor-Vehicle-Collisions-Crashes/h9gi-nx95/data}
 - ``MVCollisionsDataDictionary\_20190813\_ERD.xlsx''.
 
+\hypertarget{initial-data-exploration-and-cleaning}{%
+\subsection{Initial Data Exploration and
+Cleaning}\label{initial-data-exploration-and-cleaning}}
+
+Based on what we know about the data set from the specifications at NYC
+Open Data and the data dictionary, we have decided to perform some
+initial cleaning steps.
+
+Our analytics problem is to predict whether there will be a collision at
+a specific time (time including a time of the day, day of the year and
+calendar year). In this context, we will first look at the
+``CRASH.DATE'' graph. Thinking about the scheduling of police resource,
+we assume that this happens in advance, on a hour-by-hour and day-by-day
+basis. We assume that resources are not scheduled on a year-by-year
+basis due to uncertainty in staffing, budget, etc. We therefore examine
+the data to see whether we should include the year at all. Including the
+year would treat the data set as a time-series, years ranging from
+2012-2020. Alternatively, we could drop the year and group all
+occurrences on the same day in the same bin, possibly enhancing our
+prediction.
+
+To decide, we plot the dates and look for trends. If trends repeat
+annually, we will drop the year as this trend will be preserved when we
+combine. If the trend does not repeat annually (extends over the whole
+range of dates) then we will not combine year as we will lose this
+information when dropping year.
+
+\begin{Schunk}
+
+\includegraphics{R-Markdown-Group-10-Assignment-1_files/figure-latex/unnamed-chunk-3-1} \end{Schunk}
+
+\hypertarget{cleaned-data-exploration}{%
+\subsection{Cleaned Data Exploration}\label{cleaned-data-exploration}}
+
+{[}TEXT ABOUT EXPLORING THE DATA{]}
+
+\begin{Schunk}
+\begin{Sinput}
+#crash_dates <- as.Date(raw_crashes_data$CRASH.DATE, "%m/%d/%Y")
+#ggplot(raw_crashes_data, aes(x=CRASH.DATE))
+\end{Sinput}
+\end{Schunk}
+
 \begin{table}
 
-\caption{\label{tab:unnamed-chunk-1}Data Dictionary - Motor Vehicle Collisions – Crashes}
+\caption{\label{tab:unnamed-chunk-4}Data Dictionary - Motor Vehicle Collisions – Crashes}
 \centering
 \begin{tabular}[t]{l|l}
 \hline
@@ -92,9 +141,9 @@ BOROUGH & Borough where collision occurred\\
 \hline
 ZIP CODE & Postal code of incident occurrence\\
 \hline
-LATITUDE & Latitude coordinate for Global Coordinate System, WGS 1984, decimal degrees (EPSG 4326)\\
+LATITUDE & Latitude coordinate for Global Coordinate System, WGS 1984\\
 \hline
-LONGITUDE & Longitude coordinate for Global Coordinate System, WGS 1984, decimal degrees (EPSG 4326)\\
+LONGITUDE & Longitude coordinate for Global Coordinate System, WGS 1984\\
 \hline
 LOCATION & Latitude , Longitude pair\\
 \hline
@@ -130,15 +179,15 @@ CONTRIBUTING FACTOR VEHICLE 4 & Factors contributing to the collision for design
 \hline
 CONTRIBUTING FACTOR VEHICLE 5 & Factors contributing to the collision for designated vehicle\\
 \hline
-VEHICLE TYPE CODE 1 & Type of vehicle based on the selected vehicle category (ATV, bicycle, car/suv, ebike, escooter, truck/bus, motorcycle, other)\\
+VEHICLE TYPE CODE 1 & Type of vehicle based on the selected vehicle category\\
 \hline
-VEHICLE TYPE CODE 2 & Type of vehicle based on the selected vehicle category (ATV, bicycle, car/suv, ebike, escooter, truck/bus, motorcycle, other)\\
+VEHICLE TYPE CODE 2 & Type of vehicle based on the selected vehicle category\\
 \hline
-VEHICLE TYPE CODE 3 & Type of vehicle based on the selected vehicle category (ATV, bicycle, car/suv, ebike, escooter, truck/bus, motorcycle, other)\\
+VEHICLE TYPE CODE 3 & Type of vehicle based on the selected vehicle category\\
 \hline
-VEHICLE TYPE CODE 4 & Type of vehicle based on the selected vehicle category (ATV, bicycle, car/suv, ebike, escooter, truck/bus, motorcycle, other)\\
+VEHICLE TYPE CODE 4 & Type of vehicle based on the selected vehicle category\\
 \hline
-VEHICLE TYPE CODE 5 & Type of vehicle based on the selected vehicle category (ATV, bicycle, car/suv, ebike, escooter, truck/bus, motorcycle, other)\\
+VEHICLE TYPE CODE 5 & Type of vehicle based on the selected vehicle category\\
 \hline
 \end{tabular}
 \end{table}

@@ -4,8 +4,8 @@ ACCIDENT_DATE,Occurrence date of collision
 ACCIDENT_TIME,Occurrence time of collision
 BOROUGH,Borough where collision occurred
 ZIP CODE,Postal code of incident occurrence
-LATITUDE,"Latitude coordinate for Global Coordinate System, WGS 1984, decimal degrees (EPSG 4326) "
-LONGITUDE,"Longitude coordinate for Global Coordinate System, WGS 1984, decimal degrees (EPSG 4326)"
+LATITUDE,"Latitude coordinate for Global Coordinate System, WGS 1984"
+LONGITUDE,"Longitude coordinate for Global Coordinate System, WGS 1984"
 LOCATION,"Latitude , Longitude pair"
 ON STREET NAME,Street on which the collision occurred
 CROSS STREET NAME,Nearest cross street to the collision
@@ -23,8 +23,8 @@ CONTRIBUTING FACTOR VEHICLE 2,Factors contributing to the collision for designat
 CONTRIBUTING FACTOR VEHICLE 3,Factors contributing to the collision for designated vehicle
 CONTRIBUTING FACTOR VEHICLE 4,Factors contributing to the collision for designated vehicle
 CONTRIBUTING FACTOR VEHICLE 5,Factors contributing to the collision for designated vehicle
-VEHICLE TYPE CODE 1,"Type of vehicle based on the selected vehicle category (ATV, bicycle, car/suv, ebike, escooter, truck/bus, motorcycle, other)"
-VEHICLE TYPE CODE 2,"Type of vehicle based on the selected vehicle category (ATV, bicycle, car/suv, ebike, escooter, truck/bus, motorcycle, other)"
-VEHICLE TYPE CODE 3,"Type of vehicle based on the selected vehicle category (ATV, bicycle, car/suv, ebike, escooter, truck/bus, motorcycle, other)"
-VEHICLE TYPE CODE 4,"Type of vehicle based on the selected vehicle category (ATV, bicycle, car/suv, ebike, escooter, truck/bus, motorcycle, other)"
-VEHICLE TYPE CODE 5,"Type of vehicle based on the selected vehicle category (ATV, bicycle, car/suv, ebike, escooter, truck/bus, motorcycle, other)"
+VEHICLE TYPE CODE 1,Type of vehicle based on the selected vehicle category
+VEHICLE TYPE CODE 2,Type of vehicle based on the selected vehicle category
+VEHICLE TYPE CODE 3,Type of vehicle based on the selected vehicle category
+VEHICLE TYPE CODE 4,Type of vehicle based on the selected vehicle category
+VEHICLE TYPE CODE 5,Type of vehicle based on the selected vehicle category

@@ -14,10 +14,27 @@ output:
    
 ---
 
-```{r setup, include=FALSE}
+
+```{r, echo=FALSE}
+#code below is NOT shown in final document
 knitr::opts_chunk$set(echo = TRUE)
-#2 lines below set working directory to folder .R script is saved in
+raw_crashesData <- read.csv('./data/Motor_Vehicle_Collisions_-_Crashes.csv')
+#clean_crashesData <- read.csv('./data/motor_vehicle_collisions_crashes_cleaned.csv')
+
+#loading libraries
+library(ggplot2) #for plotting graphs
+library(RColorBrewer) #for organizing colour use with palettes
+library(gridExtra) #layout of figures
+outlineColour = brewer.pal(9, "Set1") #colour palette for outlining graphs
+fillColour = brewer.pal(9, "Pastel1") #colour palette for filling graphs
 ```
+
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+#code below IS shown in final document
+
+```
+
 
 ## Abstract
 
@@ -41,10 +58,53 @@ The data set that supports this analysis is sourced from the NYC Open Data proje
 
 Data dictionary sourced from https://data.cityofnewyork.us/Public-Safety/Motor-Vehicle-Collisions-Crashes/h9gi-nx95/data - "MVCollisionsDataDictionary_20190813_ERD.xlsx".
 
+## Initial Data Exploration and Cleaning
+
+Based on what we know about the data set from the specifications at NYC Open Data and the data dictionary, we have decided to perform some initial cleaning steps.
+
+Our analytics problem is to predict whether there will be a collision at a specific time (time including a time of the day, day of the year and calendar year). In this context, we will first look at the "CRASH.DATE" graph. Thinking about the scheduling of police resource, we assume that this happens in advance, on a hour-by-hour and day-by-day basis. We assume that resources are not scheduled on a year-by-year basis due to uncertainty in staffing, budget, etc. We therefore examine the data to see whether we should include the year at all. Including the year would treat the data set as a time-series, years ranging from 2012-2020. Alternatively, we could drop the year and group all occurrences on the same day in the same bin, possibly enhancing our prediction.
+
+To decide, we plot the dates and look for trends. If trends repeat annually, we will drop the year as this trend will be preserved when we combine. If the trend does not repeat annually (extends over the whole range of dates) then we will not combine year as we will lose this information when dropping year.
+
+``````{r echo=FALSE}
+raw_crash_dates <- as.Date(raw_crashesData$CRASH.DATE, "%m/%d/%Y")
+raw_crash_dates_df <- as.data.frame(raw_crash_dates)
+
+clean_crash_dates <- raw_crash_dates
+clean_crash_dates <- format(clean_crash_dates, format="%m/%d")
+clean_crash_dates <- as.Date(clean_crash_dates, "%m/%d")
+clean_crash_dates_df <- as.data.frame(clean_crash_dates)
+
+#density plot of dates with all years
+plot_rawCrashDates <- ggplot(raw_crash_dates_df, aes(x=raw_crash_dates_df$raw_crash_dates)) + geom_density(fill=fillColour[1], colour=outlineColour[1], alpha = 0.4) + 
+  geom_vline(aes(xintercept=as.numeric(as.Date("2013-01-01"))),color="black", linetype="solid", size=1) +
+  geom_vline(aes(xintercept=as.numeric(as.Date("2014-01-01"))),color="black", linetype="solid", size=1) + 
+  geom_vline(aes(xintercept=as.numeric(as.Date("2015-01-01"))),color="black", linetype="solid", size=1) + 
+  geom_vline(aes(xintercept=as.numeric(as.Date("2016-01-01"))),color="black", linetype="solid", size=1) + 
+  geom_vline(aes(xintercept=as.numeric(as.Date("2017-01-01"))),color="black", linetype="solid", size=1) + 
+  geom_vline(aes(xintercept=as.numeric(as.Date("2018-01-01"))),color="black", linetype="solid", size=1) + 
+  geom_vline(aes(xintercept=as.numeric(as.Date("2019-01-01"))),color="black", linetype="solid", size=1) + 
+  geom_vline(aes(xintercept=as.numeric(as.Date("2020-01-01"))),color="black", linetype="solid", size=1)
+
+#density plot of all dates with combined year
+plot_cleanCrashDates <- ggplot(clean_crash_dates_df, aes(x=clean_crash_dates_df$clean_crash_dates)) + geom_density(fill=fillColour[1], colour=outlineColour[1], alpha = 0.4)
+
+grid.arrange(plot_rawCrashDates, plot_cleanCrashDates)
+```
+
+## Cleaned Data Exploration
+
+[TEXT ABOUT EXPLORING THE DATA]
+
+```{r exploration_plots, echo=TRUE}
+#crash_dates <- as.Date(raw_crashes_data$CRASH.DATE, "%m/%d/%Y")
+#ggplot(raw_crashes_data, aes(x=CRASH.DATE))
+
+```
 
 
 ```{r echo = FALSE, results = 'asis'}
-data_dictionary <- read.csv('/data/data_dictionary.csv')
+data_dictionary <- read.csv('./data/data_dictionary.csv')
 library(knitr)
 kable(data_dictionary[], caption = "Data Dictionary - Motor Vehicle Collisions – Crashes", format = "latex")
 ```
