@@ -8,9 +8,10 @@
 #
 
 library(shiny)
+library(rpart)
 
 # Load the model here, once per R session; most efficient outside of server function
-
+model <- load("fittedRegTreeModel.rda")
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
@@ -61,25 +62,45 @@ ui <- fluidPage(
             # Can use tags$xxx() to represent xxx html tags, HTML("html stuff") to interpret HTML
             tags$p("Check out our:",
                    tags$a(href = "https://github.com/patrick-osborne/CSML1000-Group-10-assignment-1", "Github")),
-            tags$img(height = 300,
-                     width = 400,
-                     src = "xxx.png"),
-            plotOutput("map")
+            tags$img(height = 419,
+                     width = 700,
+                     src = "nycprecincts.png"),
+            tags$h1("predictedval")
+            #plotOutput("map")
         )
     )
 )
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
-
-    crashmonth <- reactive({input$crashmonth})
-    crashday <- isolate({input$crashday})
     
+    # use reactive() to have immediate update from UI interaction, with caching
+    # use isolate() to not update from UI interaction
+    crashMonth <- reactive({input$crashmonth})
+    crashDay <- reactive({input$crashday})
+    crashHour <- reactive({input$crashhour})
+    crashDayOfWeek <- reactive({input$crashdayofweek})
+    
+   
     # run code with eventReactive() or observeEvent()? hmmmm.
-    observeEvent(input$predictbutton, {print(input$crashmonth)}) #, input$crashday, input$crashdayofweek, input$crashdayofweekorday, input$crashhour)})
+    #output$predictedval <- 
+        observeEvent(input$predictbutton, {
+                                # Make a dataframe from the inputs. Week has no consequence to this test model I think, using 1. 
+                                # Precinct we iterate starting at 1.
+                                precinct <- "1"
+                                month <- as.integer(crashMonth())
+                                week <- as.integer(1)
+                                day <- as.integer(crashDay())
+                                weekday = as.integer(crashDayOfWeek())
+                                hour = as.integer(crashHour())
+                                predictMe <- data.frame(precinct, month, week, day, weekday, hour, stringsAsFactors = FALSE)
+                                predictedValue <- predict(model, predictMe)
+                                print(predictedValue)
+                                })
     
-    output$map <- renderPlot({print(crashmonth())})
-
+    output$map <- renderPlot({print(crashMonth())})
+    
+    # The prediction logic and output to UI.
 }
 
 # Run the application 
