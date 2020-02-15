@@ -5,13 +5,16 @@
 # Find out more about building applications with Shiny here:
 #
 #    http://shiny.rstudio.com/
-#
+#C:\Users\viswe\Desktop\Certificate in Machine Learning\ASSIGNMENTS\Assignment 1\CSML1000-Group-10-assignment-1
 
 library(shiny)
 library(rpart)
 
+#read precinct
+precinct <- read.csv("precinct.csv")
+
 # Load the model here, once per R session; most efficient outside of server function
-model <- load("fittedRegTreeModel.rda")
+load("fittedRegTreeModel.rda")
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
@@ -81,20 +84,21 @@ server <- function(input, output) {
     crashHour <- reactive({input$crashhour})
     crashDayOfWeek <- reactive({input$crashdayofweek})
     
+    print(precinct)
    
     # run code with eventReactive() or observeEvent()? hmmmm.
     #output$predictedval <- 
         observeEvent(input$predictbutton, {
                                 # Make a dataframe from the inputs. Week has no consequence to this test model I think, using 1. 
                                 # Precinct we iterate starting at 1.
-                                precinct <- "1"
+                                precinct <- as.character(precinct$Precinct.No)
                                 month <- as.integer(crashMonth())
                                 week <- as.integer(1)
                                 day <- as.integer(crashDay())
                                 weekday = as.integer(crashDayOfWeek())
                                 hour = as.integer(crashHour())
                                 predictMe <- data.frame(precinct, month, week, day, weekday, hour, stringsAsFactors = FALSE)
-                                predictedValue <- predict(model, predictMe)
+                                predictedValue <- predict(regTreeModel, predictMe)
                                 print(predictedValue)
                                 })
     
