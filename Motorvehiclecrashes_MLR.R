@@ -34,7 +34,7 @@ crashes_data_bound$TIME <- strftime(round_date(x, "30 minutes"), format = "%H:%M
 #to separate data frame from within another data frame
 crashes_data_filter <- data.frame(CRASH.DATE = crashes_data_bound$CRASH.DATE, CRASH.TIME = crashes_data_bound$TIME, COLLISION.ID = crashes_data_bound$COLLISION_ID, PRECINCT = crashes_data_bound$precinct$precinct)
 
-crashes_data_pivot <- crashes_data_filter %>% select(CRASH.DATE, CRASH.TIME, as.factor(PRECINCT)) %>% group_by(CRASH.DATE, CRASH.TIME) %>% count(PRECINCT)
+crashes_data_pivot <- crashes_data_filter %>% select(CRASH.DATE, CRASH.TIME, PRECINCT) %>% group_by(CRASH.DATE, CRASH.TIME) %>% count(PRECINCT)
 names(crashes_data_pivot)[names(crashes_data_pivot) == "n"] <- "COLLISION.COUNT"
 
 library(tidyr)
@@ -48,7 +48,7 @@ crashes_data <- data.frame(Month = as.integer(crashes_data_tidy1$Month), Day = a
 
 library(data.table)
 library(mltools)
-CRAS
+
 
 #train, test split
 library(caTools)
@@ -60,7 +60,7 @@ crashes_data_test <- subset(crashes_data, crashes_data_sample==FALSE)
 
 
 #Fitting the multiple regression model
-library(tree)
+#library(tree)
 model <- lm((TOTAL.COLLISION ~ .),crashes_data_train)
 summary(model)
 
