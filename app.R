@@ -5,16 +5,17 @@
 # Find out more about building applications with Shiny here:
 #
 #    http://shiny.rstudio.com/
-#C:\Users\viswe\Desktop\Certificate in Machine Learning\ASSIGNMENTS\Assignment 1\CSML1000-Group-10-assignment-1
+#
 
 library(shiny)
 library(rpart)
+library(leaflet)
+library(ggplot2)
 
-#read precinct
-precinct <- read.csv("precinct.csv")
-
-# Load the model here, once per R session; most efficient outside of server function
+# Load the once per session stuff here; most efficient outside of server/ui functions
 load("fittedRegTreeModel.rda")
+precinctNum <- read.csv("precinct.csv")
+precinctMap <- read_sf('geo_export_32d06294-3e95-408c-86e3-7a17a84f9c0e.shp', stringsAsFactors=FALSE)
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
@@ -65,11 +66,14 @@ ui <- fluidPage(
             # Can use tags$xxx() to represent xxx html tags, HTML("html stuff") to interpret HTML
             tags$p("Check out our:",
                    tags$a(href = "https://github.com/patrick-osborne/CSML1000-Group-10-assignment-1", "Github")),
-            tags$img(height = 419,
-                     width = 700,
-                     src = "nycprecincts.png"),
-            tags$h1("predictedval")
-            #plotOutput("map")
+            leaflet(precinctMap) %>%
+                addTiles() %>%
+                setView(-74.00, 40.71, zoom = 10)%>%
+                addPolygons(popup = ~precinct) %>%
+                addProviderTiles("CartoDB.Positron")
+            
+            #tags$h3("predictedvals in console right now"),
+            #plotOutput("display"),
         )
     )
 )
@@ -84,25 +88,23 @@ server <- function(input, output) {
     crashHour <- reactive({input$crashhour})
     crashDayOfWeek <- reactive({input$crashdayofweek})
     
-    print(precinct)
    
     # run code with eventReactive() or observeEvent()? hmmmm.
     #output$predictedval <- 
         observeEvent(input$predictbutton, {
                                 # Make a dataframe from the inputs. Week has no consequence to this test model I think, using 1. 
                                 # Precinct we iterate starting at 1.
-                                precinct <- as.character(precinct$Precinct.No)
+                                precincts <- as.character(precinctNum$Precinct.No)
                                 month <- as.integer(crashMonth())
                                 week <- as.integer(1)
                                 day <- as.integer(crashDay())
                                 weekday = as.integer(crashDayOfWeek())
                                 hour = as.integer(crashHour())
-                                predictMe <- data.frame(precinct, month, week, day, weekday, hour, stringsAsFactors = FALSE)
+                                predictMe <- data.frame(precincts, month, week, day, weekday, hour, stringsAsFactors = FALSE)
                                 predictedValue <- predict(regTreeModel, predictMe)
-                                print(predictedValue)
+                                print(as.data.frame(predictedValue))
+                                #output$display <- renderPlot({ggplot(as.data.frame(predictedValue)) + geom_bar(aes(x = precinct))})
                                 })
-    
-    output$map <- renderPlot({print(crashMonth())})
     
     # The prediction logic and output to UI.
 }
