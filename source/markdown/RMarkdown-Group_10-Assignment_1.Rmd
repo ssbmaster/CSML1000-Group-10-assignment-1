@@ -1,0 +1,267 @@
+---
+title: "Predicting Motor Vehicle Collisions in New York City"
+author:
+  - name: Alex Fung
+  - name: Viswesh Krishnamurthy
+  - name: Tony Lee
+  - name: Patrick Osborne
+date: "Feb. 15, 2020"
+
+output:
+  rticles::rjournal_article:
+#REMOVE THIS    includes:
+#REMOVE THIS      in_header: preamble.tex
+   
+---
+
+
+```{r, echo=FALSE}
+#code below is NOT shown in final document
+knitr::opts_chunk$set(echo = TRUE)
+raw_crashesData <- read.csv('../data/Motor_Vehicle_Collisions_-_Crashes.csv')
+clean_crashesData <- read.csv('../data/motor_vehicle_collisions_crashes_cleaned.csv')
+
+#loading libraries
+library(ggplot2) #for plotting graphs
+library(RColorBrewer) #for organizing colour use with palettes
+library(gridExtra) #layout of figures
+library(data.table) #used to subset data
+library(xtable)#used to print tables in the markdown document
+library(knitr)#used to output to LaTeX/PDF
+memory.limit(size=56000)
+outlineColour = brewer.pal(9, "Set1") #colour palette for outlining graphs
+fillColour = brewer.pal(9, "Pastel1") #colour palette for filling graphs
+```
+
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+#code below IS shown in final document
+
+```
+
+
+## Abstract
+
+Technological progress in the world has unarguably improved the quality of life for the average person in many ways. The age of the automobile has shaped the way in which work, play and live our lives. Roadways, buildings, cities and entire countries have been designed to accommodate motor vehicles. As automobile technology has advanced making cars faster and capable of more advanced maneuvers, so has our concern with the safety of these vehicles. Entire disciplines such as traffic management are devoted to optimizing numerous factors to ensure the safe and efficient movement of people and goods. As we move into the age of data, all stakeholders in the automobile industry must effectively collect and utilize the wealth of information available to better meet their goals if progress is to continue. In this project, we take the position of a law enforcement agency, the New York City Police Department, as they seek to best utilize their resources in the context of responding to traffic collisions in the city.
+
+## Background
+
+At the end of 2017 in New York City, there were 1,923,041 cars registered to residents of the city. (https://nyc.streetsblog.org/2018/10/03/car-ownership-continues-to-rise-under-mayor-de-blasio/) This already-significant number does not include the heavy flow of vehicles of those who visit the city or are simply passing through. By contrast, the New York City Police Department (NYPD) budgets for a headcount of 35,822 uniformed officers (http://council.nyc.gov/budget/wp-content/uploads/sites/54/2017/03/056-NYPD.pdf - page 4), distributed across 77 police precincts (geographic divisions of the city).  On-duty officers/traffic enforcement agents are allocated to each precinct to enforce traffic laws and handle emergency and administrative response to traffic incidents (such as collisions). NYC has been collecting traffic data, including specific data on vehicle collisions since 2014 to support “Vision Zero” , a traffic safety initiative which has the goal of eliminating traffic fatalities. (https://data.cityofnewyork.us/Public-Safety/Motor-Vehicle-Collisions-Crashes/h9gi-nx95/data)
+
+## Objective
+
+The objective of our analysis is to develop a supervised, prediction model using Machine Learning techniques and the CRISP-DM framework (cite textbook) on the available collision data to predict whether there will be a collision in a specified police precinct at a specified time. The intent of predicting this data is to inform the NYPD’s optimal assignment of limited officers and resources across the 77 police precincts.
+
+## Data Analysis
+
+The data set that supports this analysis is sourced from the NYC Open Data project. The title of the data set is “Motor Vehicle Collisions – Crashes”. It contains entries for every collision recorded within New York City limits by NYPD agents beginning July 1st, 2012 up to the present day. There are approximately 1.65 million entries in the data set.
+
+## Data Dictionary
+
+Data dictionary sourced from https://data.cityofnewyork.us/Public-Safety/Motor-Vehicle-Collisions-Crashes/h9gi-nx95/data - "MVCollisionsDataDictionary_20190813_ERD.xlsx".
+
+```{r, data-dictionary, echo = FALSE, results = 'asis'}
+data_dictionary <- read.csv('../data/data_dictionary.csv')
+
+kable(data_dictionary[], caption = "Data Dictionary - Motor Vehicle Collisions – Crashes", format = "latex")
+```
+\newpage
+
+## Initial Data Exploration and Cleaning
+
+[SUMMARY OF DATA INSERT TEXT]
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, results='asis', fig.align="center", fig.cap="Summary Tables of All Features"}
+
+options(xtable.comment = FALSE)
+options(xtable.floating = FALSE)
+print(xtable(summary(raw_crashesData[,1:6])), include.rownames = FALSE, scalebox=0.6)  
+
+print(xtable(summary(raw_crashesData[,7:10])), include.rownames = FALSE, scalebox=0.6)  
+
+print(xtable(summary(raw_crashesData[,11:14])), include.rownames = FALSE, scalebox=0.6)  
+
+print(xtable(summary(raw_crashesData[,15:18])), include.rownames = FALSE, scalebox=0.6)  
+
+print(xtable(summary(raw_crashesData[,19:22])), include.rownames = FALSE, scalebox=0.6)  
+
+print(xtable(summary(raw_crashesData[,23:26])), include.rownames = FALSE, scalebox=0.6)  
+
+print(xtable(summary(raw_crashesData[,26:29])), include.rownames = FALSE, scalebox=0.6)  
+
+```
+
+Based on what we know about the data set from the specifications at NYC Open Data and the data dictionary, we have decided to perform some initial cleaning steps.
+
+Our analytics problem is to predict whether there will be a collision at a specific time (time including a time of the day, day of the year and calendar year). In this context, we will first look at the "CRASH.DATE" graph. Thinking about the scheduling of police resource, we assume that this happens in advance, on a hour-by-hour and day-by-day basis. We assume that resources are not scheduled on a year-by-year basis due to uncertainty in staffing, budget, etc. We therefore examine the data to see whether we should include the year at all. Including the year would treat the data set as a time-series, years ranging from 2012-2020. Alternatively, we could drop the year and group all occurrences on the same day in the same bin, possibly enhancing our prediction.
+
+To decide, we plot the dates and look for trends. If trends repeat annually, we will drop the year as this trend will be preserved when we combine. If the trend does not repeat annually (extends over the whole range of dates) then we will not combine year as we will lose this information when dropping year.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center", fig.cap="Collisions per Day - All Years"}
+raw_crash_dates <- as.Date(raw_crashesData$CRASH.DATE, "%m/%d/%Y")
+raw_crash_dates_df <- as.data.frame(raw_crash_dates)
+
+setDT(raw_crash_dates_df)
+
+raw_crash_dates_df <- raw_crash_dates_df[raw_crash_dates_df$raw_crash_dates > "2013-01-01", ]
+raw_crash_dates_df <- raw_crash_dates_df[raw_crash_dates_df$raw_crash_dates < "2019-01-01", ]
+
+
+clean_crash_dates <- raw_crash_dates
+clean_crash_dates <- format(clean_crash_dates, format="%m/%d")
+clean_crash_dates <- as.Date(clean_crash_dates, "%m/%d")
+clean_crash_dates_df <- as.data.frame(clean_crash_dates)
+#density plot of dates with all years
+plot_rawCrashDates <- ggplot(raw_crash_dates_df, aes(x=raw_crash_dates_df$raw_crash_dates)) + 
+  geom_density(fill=fillColour[1], colour=outlineColour[1], alpha = 0.4) + 
+  geom_vline(aes(xintercept=as.numeric(as.Date("2013-01-01"))),color="black", linetype="solid", size=1) +
+  geom_vline(aes(xintercept=as.numeric(as.Date("2014-01-01"))),color="black", linetype="solid", size=1) + 
+  geom_vline(aes(xintercept=as.numeric(as.Date("2015-01-01"))),color="black", linetype="solid", size=1) + 
+  geom_vline(aes(xintercept=as.numeric(as.Date("2016-01-01"))),color="black", linetype="solid", size=1) + 
+  geom_vline(aes(xintercept=as.numeric(as.Date("2017-01-01"))),color="black", linetype="solid", size=1) + 
+  geom_vline(aes(xintercept=as.numeric(as.Date("2018-01-01"))),color="black", linetype="solid", size=1) + 
+  geom_vline(aes(xintercept=as.numeric(as.Date("2019-01-01"))),color="black", linetype="solid", size=1) + 
+  geom_vline(aes(xintercept=as.numeric(as.Date("2020-01-01"))),color="black", linetype="solid", size=1) +
+  xlab("Collisions per Day") + ylab("Density") + labs(title = "All Years")
+
+#density plot of all dates with combined year
+plot_cleanCrashDates <- ggplot(clean_crash_dates_df, aes(x=clean_crash_dates_df$clean_crash_dates)) +
+  geom_density(fill=fillColour[1], colour=outlineColour[1], alpha = 0.4) +
+  xlab("Collisions per Day") + ylab("Density") + labs(title = "Years Combined")
+
+plot_rawCrashDates
+rm(plot_rawCrashDates)
+```
+The vertical black lines in the “All Years” plot represent the start of each year. As you can see from the plot, there is a noticeable repeating trend in each year (between the black lines) with a decrease in collisions at the start of each year, followed by various other increase/decreases.
+As we are more interested in capturing this repeating annual trend than year-over-year changes, we will combine all data into a representation of one year.
+Additionally, we will drop years 2012 and 2020 (the first and last years in the data set) to avoid over/under-representing specific months in the combined-year data set. This leaves us with the “Years Combined” data set plotted below.
+
+We use the following code to keep only data in 2013 onwards and in prior to 2020, as mentioned.
+
+```{r echo=TRUE, eval=FALSE}
+raw_crash_dates_df <- raw_crash_dates_df[raw_crash_dates_df$raw_crash_dates > "2013-01-01", ]
+raw_crash_dates_df <- raw_crash_dates_df[raw_crash_dates_df$raw_crash_dates < "2020-01-01", ]
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center", fig.cap="Collisions per Day - Years Combined"}
+plot_cleanCrashDates
+rm(plot_cleanCrashDates)
+```
+
+[INSERT WRITEUP ABOUT DATA CLEANING AND PREP HERE]
+
+## Cleaned Data Exploration
+
+[TEXT ABOUT EXPLORING THE DATA]
+
+#density plot
+
+```{r data-exploration, echo=FALSE, message=FALSE, warning=FALSE, fig.align="center", fig.cap="Plots of Selected Features"}
+rm(raw_crashesData)
+plot1 <- ggplot(as.data.frame(clean_crashesData$precinct), aes(x=clean_crashesData$precinct)) +
+  geom_density(fill=fillColour[1], colour=outlineColour[1], alpha = 0.4) +
+  xlab("Precincts") + ylab("Density") + labs(title = "Police Precints")
+
+#plot2 <- ggplot(as.data.frame(clean_crashesData$timestamp), aes(x=clean_crashesData$timestamp)) +
+#  geom_density(fill=fillColour[2], colour=outlineColour[2], alpha = 0.4) +
+#  xlab("Date + Time") + ylab("Density") + labs(title = "Raw Timestamp")
+
+plot3 <- ggplot(as.data.frame(clean_crashesData$month), aes(x=clean_crashesData$month)) +
+  geom_density(fill=fillColour[3], colour=outlineColour[3], alpha = 0.4) +
+  xlab("Month") + ylab("Density") + labs(title = "Month of the Year")
+
+plot4 <- ggplot(as.data.frame(clean_crashesData$week), aes(x=clean_crashesData$week)) +
+  geom_density(fill=fillColour[4], colour=outlineColour[4], alpha = 0.4) +
+  xlab("Week") + ylab("Density") + labs(title = "Week of the Year")
+
+plot5 <- ggplot(as.data.frame(clean_crashesData$day), aes(x=clean_crashesData$day)) +
+  geom_density(fill=fillColour[5], colour=outlineColour[5], alpha = 0.4) +
+  xlab("Day") + ylab("Density") + labs(title = "Day of the Year")
+
+plot6 <- ggplot(as.data.frame(clean_crashesData$weekday), aes(x=clean_crashesData$weekday)) +
+  geom_density(fill=fillColour[6], colour=outlineColour[6], alpha = 0.4) +
+  xlab("Day (in Week)") + ylab("Density") + labs(title = "Day of the Week")
+
+plot7 <- ggplot(as.data.frame(clean_crashesData$hour), aes(x=clean_crashesData$hour)) +
+  geom_density(fill=fillColour[7], colour=outlineColour[7], alpha = 0.4) +
+  xlab("Hour") + ylab("Density") + labs(title = "Hour of the Day")
+
+plot8 <- ggplot(as.data.frame(clean_crashesData$total_number_of_crashes), aes(x=clean_crashesData$total_number_of_crashes)) +
+  geom_bar(fill=fillColour[8], colour=outlineColour[8], alpha = 0.4) +
+  xlab("Crashes") + ylab("Density") + labs(title = "Total Number of Crashes at Specific Time Index")
+
+plot9 <- ggplot(as.data.frame(clean_crashesData$did_crash_happen), aes(x=clean_crashesData$did_crash_happen)) +
+  geom_bar(fill=fillColour[9], colour=outlineColour[9], alpha = 0.4) +
+  xlab("Crash?") + ylab("Density") + labs(title = "True/False Crash/No Crash at Specific Time Index")
+
+grid.arrange(plot1, plot3, plot4, plot5, plot6, plot7, plot8, plot9)
+
+rm(plot1, plot3, plot4, plot5, plot6, plot7, plot8, plot9)
+
+```
+
+```{r exploration_plots, echo=TRUE}
+#crash_dates <- as.Date(raw_crashes_data$CRASH.DATE, "%m/%d/%Y")
+#ggplot(raw_crashes_data, aes(x=CRASH.DATE))
+```
+
+# Models
+
+As we worked through the data set, we were unsure as to which supervised machine learning models would best suit our business needs. As such, we have run, evaluated and compared the following 6 models:
+
+* Decision Tree
+* Gradient Boosting
+* K-Nearest Neighbor
+* Logistic Regression
+* Random Forest
+* Regression Tree
+
+# Evaluation
+
+```{r AUC-comparison, echo=FALSE, message=FALSE, warning=FALSE, fig.align="center", fig.cap="AUC Comparison"}
+ALG <- c("Reg. Tree", "Decision Tree", "Gradient Boosting", "Logistic Reg.", "K-Nearest N.", "Random Forest")
+AUC_VAL = c(0.6151, 0.6672, 0.667, 0.66, 0.5, 0.653)
+AUC <- data.frame(ALG, AUC_VAL)
+AUC <- AUC[order(AUC$AUC_VAL),]
+plotAUC <- ggplot(AUC, aes(x=AUC$ALG, y=AUC$AUC_VAL)) +
+  geom_bar(stat = "identity", position = 'dodge', fill=fillColour[1], colour=outlineColour[1], alpha = 0.4) +
+  xlab("ML Model") + ylab("AUC") + labs(title = "AUC Comparison") +
+  geom_text(aes(label=AUC$AUC_VAL), position=position_dodge(width=0.9), vjust=-0.25)
+plotAUC
+```
+
+## Document Style Attribution
+
+This document was generated using a modified version of the "RJournal.sty" file provided by the The R Foundation at https://journal.r-project.org/submissions.html.
+
+Inspiration, useful package suggestions and some sample code for the xtables and ggplot functionality has been reproduced from the example assignment 1 R Markdown file created by V2MSLabs (https://github.com/v2msLabs/ML1000-1/blob/master/source/main.Rmd).
+
+The document can be regenerated in RStudio by Knitting the provided "R Markdown-Group 10-Assignment 1.Rmd" file with the provided "RJournal.sty" file in the same directory.
+
+
+
+
+
+
+
+# DEFAULT R MARKDOWN CODE BELOW
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

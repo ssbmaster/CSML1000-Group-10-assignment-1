@@ -1,0 +1,290 @@
+
+R version 3.6.2 (2019-12-12) -- "Dark and Stormy Night"
+Copyright (C) 2019 The R Foundation for Statistical Computing
+Platform: x86_64-w64-mingw32/x64 (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> library(dplyr)
+
+Attaching package: ‘dplyr’
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+> library(caTools)
+> library(pROC)
+Type 'citation("pROC")' for a citation.
+
+Attaching package: ‘pROC’
+
+The following objects are masked from ‘package:stats’:
+
+    cov, smooth, var
+
+> library(doParallel)
+Loading required package: foreach
+Loading required package: iterators
+Loading required package: parallel
+> library(caret)
+Loading required package: lattice
+Loading required package: ggplot2
+> #library(DMwR)
+> #library(ROSE)
+> library(MLmetrics)
+
+Attaching package: ‘MLmetrics’
+
+The following objects are masked from ‘package:caret’:
+
+    MAE, RMSE
+
+The following object is masked from ‘package:base’:
+
+    Recall
+
+> library(randomForest)
+randomForest 4.6-14
+Type rfNews() to see new features/changes/bug fixes.
+
+Attaching package: ‘randomForest’
+
+The following object is masked from ‘package:ggplot2’:
+
+    margin
+
+The following object is masked from ‘package:dplyr’:
+
+    combine
+
+> 
+> #setup cluster (forget about this lmao)
+> #cl <- makePSOCKcluster(2) #4 clusters on my machine
+> #registerDoParallel(cl)
+> 
+> 
+> motor_collision_crash_clean_data <- read.csv("C:\\Users\\alexf\\Documents\\CSML1000\\Assignments\\CSML1000-Group-10-assignment-1\\data\\motor_vehicle_collisions_crashes_cleaned.csv")
+> 
+> #data <- select(motor_collision_crash_clean_data, -c(id, timestamp, total_number_of_crashes))
+> data <- select(motor_collision_crash_clean_data, -c(id, total_number_of_crashes))
+> 
+> data$timestamp = as.Date(data$timestamp)
+> data$precinct = as.character(data$precinct)
+> data$month = as.numeric(data$month)
+> data$week = as.numeric(data$week)
+> data$day = as.numeric(data$day)
+> data$weekday = as.numeric(data$weekday)
+> data$hour = as.numeric(data$hour)
+> data$did_crash_happen = as.factor(
++   ifelse(data$did_crash_happen ==  0, "no", "yes")
++ )
+> 
+> set.seed(123)
+> data_newer = data[data$timestamp > '2018-01-27', ]
+> data_sample = sample.split(data_newer$hour,SplitRatio=0.80)
+> trainData = subset(data_newer, data_sample==TRUE)
+> testData = subset(data_newer, data_sample==FALSE)
+> 
+> trainData <- select(trainData, -c(timestamp))
+> testData <- select(testData, -c (timestamp))
+> 
+> set.seed(123)
+> columns = colnames(trainData)
+> trainData_upsampled = upSample(
++   x = trainData[, columns[columns != "did_crash_happen"] ], 
++   y = trainData$did_crash_happen, list = F, yname = "did_crash_happen"
++ )
+> print(table(trainData_upsampled$did_crash_happen))
+
+    no    yes 
+821202 821202 
+> 
+> #try downsampling instead...
+> trainData_downsampled = downSample(
++   x = trainData[, columns[columns != "did_crash_happen"] ], 
++   y = trainData$did_crash_happen, list = F, yname = "did_crash_happen"
++ )
+> print(table(trainData_downsampled$did_crash_happen))
+
+    no    yes 
+256604 256604 
+> 
+> #remove unnecessary data objects
+> rm(motor_collision_crash_clean_data, data, data_newer, data_sample, trainData)
+> rm(trainData_upsampled)
+> gc()
+           used  (Mb) gc trigger  (Mb)  max used   (Mb)
+Ncells  2098544 112.1    6784288 362.4   7270887  388.4
+Vcells 11169648  85.3  127603956 973.6 159359214 1215.9
+> 
+> set.seed(123)
+> ptm_rf <- proc.time()
+> #random forest @ 500 trees, mtry = 2 
+> model_rf = randomForest(
++   did_crash_happen ~ .,
++   data = trainData_downsampled,
++   importance = TRUE,
++   do.trace=10,
++   ntree = 250,
++   mtry = 2
++ )
+ntree      OOB      1      2
+   10:  38.27% 37.32% 39.22%
+   20:  36.72% 36.99% 36.44%
+   30:  36.01% 37.12% 34.91%
+   40:  35.71% 37.26% 34.16%
+   50:  35.52% 37.20% 33.84%
+   60:  35.35% 37.27% 33.44%
+   70:  35.32% 37.28% 33.36%
+   80:  35.20% 37.29% 33.11%
+   90:  35.20% 37.35% 33.06%
+  100:  35.17% 37.31% 33.03%
+  110:  35.13% 37.30% 32.95%
+  120:  35.09% 37.30% 32.89%
+  130:  35.03% 37.29% 32.77%
+  140:  35.00% 37.29% 32.71%
+  150:  34.98% 37.31% 32.66%
+  160:  34.99% 37.38% 32.61%
+  170:  34.99% 37.36% 32.62%
+  180:  34.95% 37.33% 32.58%
+  190:  34.93% 37.31% 32.55%
+  200:  34.91% 37.28% 32.54%
+  210:  34.89% 37.35% 32.44%
+  220:  34.89% 37.35% 32.43%
+  230:  34.93% 37.36% 32.49%
+  240:  34.89% 37.31% 32.46%
+  250:  34.87% 37.29% 32.45%
+> proc.time() - ptm_rf
+   user  system elapsed 
+ 428.50    9.89  439.36 
+> 
+> 
+> pred.model_rf.prob = predict(model_rf, newdata = testData, type="prob")
+> pred.model_rf.raw = predict(model_rf, newdata = testData)
+> 
+> roc.model_rf = pROC::roc(
++   testData$did_crash_happen, 
++   as.vector(ifelse(pred.model_rf.prob[,"yes"] >0.5, 1,0))
++ )
+Setting levels: control = no, case = yes
+Setting direction: controls < cases
+> auc.model_rf = pROC::auc(roc.model_rf)
+> print(auc.model_rf)
+Area under the curve: 0.653
+> 
+> plot.roc(roc.model_rf, print.auc = TRUE, col = 'red' , print.thres = "best" )
+> 
+> confusionMatrix(data = pred.model_rf.raw, testData$did_crash_happen)
+Confusion Matrix and Statistics
+
+          Reference
+Prediction     no    yes
+       no  128730  20709
+       yes  76344  43680
+                                         
+               Accuracy : 0.6398         
+                 95% CI : (0.638, 0.6416)
+    No Information Rate : 0.761          
+    P-Value [Acc > NIR] : 1              
+                                         
+                  Kappa : 0.2361         
+                                         
+ Mcnemar's Test P-Value : <2e-16         
+                                         
+            Sensitivity : 0.6277         
+            Specificity : 0.6784         
+         Pos Pred Value : 0.8614         
+         Neg Pred Value : 0.3639         
+             Prevalence : 0.7610         
+         Detection Rate : 0.4777         
+   Detection Prevalence : 0.5546         
+      Balanced Accuracy : 0.6531         
+                                         
+       'Positive' Class : no             
+                                         
+> 
+> #summary of model 
+> summary(model_rf)
+                Length  Class  Mode     
+call                  7 -none- call     
+type                  1 -none- character
+predicted        513208 factor numeric  
+err.rate            750 -none- numeric  
+confusion             6 -none- numeric  
+votes           1026416 matrix numeric  
+oob.times        513208 -none- numeric  
+classes               2 -none- character
+importance           24 -none- numeric  
+importanceSD         18 -none- numeric  
+localImportance       0 -none- NULL     
+proximity             0 -none- NULL     
+ntree                 1 -none- numeric  
+mtry                  1 -none- numeric  
+forest               14 -none- list     
+y                513208 factor numeric  
+test                  0 -none- NULL     
+inbag                 0 -none- NULL     
+terms                 3 terms  call     
+> 
+> #see the different metrics and roc curve this model scored against trainData_downsampled
+> pred.model_rf.train.prob = predict(model_rf, newdata = trainData_downsampled, type="prob")
+> pred.model_rf.train.raw = predict(model_rf, newdata = trainData_downsampled)
+> 
+> roc.model_rf.train = pROC::roc(
++   trainData_downsampled$did_crash_happen, 
++   as.vector(ifelse(pred.model_rf.train.prob[,"yes"] >0.5, 1,0))
++ )
+Setting levels: control = no, case = yes
+Setting direction: controls < cases
+> auc.model_rf.train = pROC::auc(roc.model_rf.train)
+> print(auc.model_rf.train)
+Area under the curve: 0.8616
+> 
+> #plot ROC curve
+> plot.roc(roc.model_rf.train, print.auc = TRUE, col = 'blue' , print.thres = "best" )
+> 
+> #generate confusion matrix, as well as other metrics such as accuracy, balanced accuracy
+> confusionMatrix(data = pred.model_rf.train.raw, trainData_downsampled$did_crash_happen)
+Confusion Matrix and Statistics
+
+          Reference
+Prediction     no    yes
+       no  216329  30798
+       yes  40275 225806
+                                          
+               Accuracy : 0.8615          
+                 95% CI : (0.8606, 0.8625)
+    No Information Rate : 0.5             
+    P-Value [Acc > NIR] : < 2.2e-16       
+                                          
+                  Kappa : 0.723           
+                                          
+ Mcnemar's Test P-Value : < 2.2e-16       
+                                          
+            Sensitivity : 0.8430          
+            Specificity : 0.8800          
+         Pos Pred Value : 0.8754          
+         Neg Pred Value : 0.8486          
+             Prevalence : 0.5000          
+         Detection Rate : 0.4215          
+   Detection Prevalence : 0.4815          
+      Balanced Accuracy : 0.8615          
+                                          
+       'Positive' Class : no       
