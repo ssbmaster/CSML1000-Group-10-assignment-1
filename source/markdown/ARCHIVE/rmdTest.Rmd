@@ -1,0 +1,66 @@
+---
+title: "Predicting Motor Vehicle Collisions in New York City"
+author:
+  - name: Alex Fung
+  - name: Viswesh Krishnamurthy
+  - name: Tony Lee
+  - name: Patrick Osborne
+date: "Feb. 15, 2020"
+
+output:
+  rticles::rjournal_article:
+#REMOVE THIS    includes:
+#REMOVE THIS      in_header: preamble.tex
+   
+---
+
+
+```{r, echo=FALSE}
+#code below is NOT shown in final document
+knitr::opts_chunk$set(echo = TRUE)
+
+#loading libraries
+library(ggplot2) #for plotting graphs
+library(RColorBrewer) #for organizing colour use with palettes
+library(gridExtra) #layout of figures
+library(data.table) #used to subset data
+library(xtable)#used to print tables in the markdown document
+library(knitr)#used to output to LaTeX/PDF
+memory.limit(size=56000)
+outlineColour = brewer.pal(9, "Set1") #colour palette for outlining graphs
+fillColour = brewer.pal(9, "Pastel1") #colour palette for filling graphs
+```
+
+
+```{r echo=TRUE, message=FALSE, warning=FALSE, eval=FALSE}
+
+Confusion Matrix and Statistics
+
+          Reference
+Prediction     no    yes
+       no  314273  43937
+       yes 204801 109738
+                                          
+               Accuracy : 0.6303          
+                 95% CI : (0.6291, 0.6314)
+    No Information Rate : 0.7716          
+    P-Value [Acc > NIR] : 1               
+                                          
+                  Kappa : 0.2335          
+                                          
+ Mcnemar's Test P-Value : <2e-16          
+                                          
+            Sensitivity : 0.6054          
+            Specificity : 0.7141          
+         Pos Pred Value : 0.8773          
+         Neg Pred Value : 0.3489          
+             Prevalence : 0.7716          
+         Detection Rate : 0.4671          
+   Detection Prevalence : 0.5325          
+      Balanced Accuracy : 0.6598          
+                                          
+       'Positive' Class : no  
+
+```
+
+
