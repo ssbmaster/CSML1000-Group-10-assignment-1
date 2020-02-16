@@ -1,0 +1,87 @@
+# Data Cleaning Steps
+## The Problem
+While the Motor Vehicle Collisions – Crashes" dataset on NYC Open Data contains every motor vehicle collision within the City of New York, there is a singular problem with this dataset that prevents us from using it for the purpose of creating a supervised, binary classification model: it only contains positive observations (i.e. motor vehicle crashes). Therefore, to make this dataset usable for the intended supervision problem as stated, negative observations must be created to complement the dataset. In addition, a binary response variable would be created afterwards to identify the positive and negative observations.
+
+However, the creation of negative observations itself is not a simple problem to solve. for our motor vehicle collision dataset. Each row of the dataset represents a specific motor vehicle collilsion at a particular point in time, as represented by the `CRASH DATE` and `CRASH TIME` columns, and a particular point in space, as represented by the `LATITUDE` and `LONGITUDE` columns. For every motor vehicle collision that has been captured by the dataset, there are potentially thousands, or even hundreds of thousands of collisions that did not happen at any given point in time or space. To put into perspective, let us look at the statistics to show a rough estimate that the likelihood of an average driver being a participant of a car crash. For example, of the 3.8 million commuters in New York City on a regular workday, approximately 27% of the commuters do so by car, truck, or van (https://edc.nyc/article/new-yorkers-and-their-cars). Assuming that half the commuters carpool (https://www.citylab.com/transportation/2019/01/commuting-to-work-data-car-public-transit-bike/580507/), and the rest drive solo, this would mean, at the very least, there are a bit more than half a million vehicles on the road on any given workday.  Out of the half a million or so vehicles on New York City roads, there are only about 678 car crashes in New York each day (https://www.dandalaw.com/are-car-accidents-common-in-new-york-city/, but ideally we should calculate this from our dataset!!!). All these numbers point out that getting into a motor vehicle collision, even in a city with an unsafe road reputation like New York, is an unlikely event. 
+
+Consequently, to generate negative observations would yield a hugely imblanaced dataset, consisting mostly of negative observations, and very few positive observations. In addition, these negative observations would also have to have generated features, such as `CRASH DATE`, `CRASH TIME`, `LATITUDE`, `LOGITUDE`, etc. This itself is also another issue, as we cannot randomly generate those features without understanding the distribution of New York City traffic across different areas and times, since some boroughs of New York, such as Staten Island, will have less traffic, and therefore less motor vehicle accidents than other boroughs (we should ideally show graphs of the number of accidents per borough).
+
+##The Proposed Solution
+An easier solution to the problem of generating negative observations is to: (a) group the positive observations by pre-determined datetime ranges, and pre-determined geolocation areas, (b) aggregate the number motor vehicle collisions into a column containing the counts of motor vehicle crashes given a pre-determined datetime range, and pre-determined geolocation area, and (c) via inference, generate negative observations from the grouped, and aggregated positive observations. By generalizing both the time and space of motor vehicle collisions, the generation of negative observations will not likely create a highly imbalnaced dataset that heavily skewers towards the negative class, but also there is now no need to generate those features whilst having to research the New York City traffic flow across different space-time groups. Nevertheless, it is still important to determine an appropriate datetime range, and geo-location areas to bin the observations; it must be taken into account these pre-determined datetime ranges, and geo-location areas should not only prevent extreme class imbalance towards either positive or negative class, but also be relevant to our business problem. 
+
+For this particular business problem, it would make sense to use New York Police Department precincts as the pre-determined geolocation areas group the positive observations by. This made sense given our business problem was from a NYPD point of view, as they could divert police resources from other precincts that are less likely to experience motor crashes to other precincts with potentially higher collision rates. We also experimented to use hourly bins, as we felt it would be useful for the police to accurately predict which precinct would likely have more motor vehicle accidents. Overall, using hourly bins and NYPD precincts allowed the dataset to have 77% negative observations, and roughly 23% positive observations, which was good enough to have only a moderate imbalance.
+
+
+## Creation of the Precinct column
+To map the NYPD precinct, the GeoJson containing all the MultiPolygons of NYPD precincts was downloaded from https://data.cityofnewyork.us/Public-Safety/Police-Precincts/78dh-3ptz. Each MultiPolygon consists of an array of Polygons, and in turn, each Polygon consists of an array of Latitude and Longitude coordinates. Looping through each positive observation in the dataset, the correct precinct would be assigned to each positive observation. 
+
+As an example: 
+CRASH DATETIME     | LATITUDE      | LONGITUDE    | PRECINCT     |
+-----------------  | ------------- | ------------ | ------------ |
+06/09/2019 11:32   | 40.725210     | -73.995860   | 5            |
+06/09/2019 12:55   | 40.586680	   | -73.945114   | 61           |
+06/09/2019 11:11   | 40.720626     | -73.994971   | 5            |
+
+##Creation of a CRASH_BINARY column
+We then create a `CRASH_BINARY` column for each positive observation. All of the positive observations will have a `CRASH_BINARY` value of 1, denoting a positive observation.
+
+CRASH DATETIME     | LATITUDE      | LONGITUDE    | PRECINCT     | CRASH_BINARY  |
+-----------------  | ------------- | ------------ | ------------ | ------------- |
+06/09/2019 11:32   | 40.725210     | -73.995860   | 5            |  1            |
+06/09/2019 12:55   | 40.586680	   | -73.945114   | 61           |  1            |
+06/09/2019 11:11   | 40.720626     | -73.994971   | 5            |  1            |
+
+
+##Round Date Time to nearest Hour
+We round the `CRASH DATETIME` column to the nearest hour. It is always rounded down (i.e. if it is 11:59AM for example, it is rounded down to 11AM).
+ROUNDEDCRASH DATETIME     | LATITUDE      | LONGITUDE    | PRECINCT     | CRASH_BINARY  |
+------------------------  | ------------- | ------------ | ------------ | ------------- |
+06/09/2019 11:00          | 40.725210     | -73.995860   | 5            |  1            |
+06/09/2019 12:00          | 40.586680	    | -73.945114   | 61           |  1            |
+06/09/2019 11:00          | 40.720626	    | -73.994971   | 5            |  1            |
+
+## Creation of Negative Observations
+After assigning a precinct to each positive positive observation, negative observations must now be created. We first group the positive obserations by `PRECINCT` and `CRASH DATETIME`, and aggregate the groups by the sum by CRASH_BINARY
+
+ROUNDEDCRASH DATETIME     |  PRECINCT     | CRASH_BINARY SUM  |
+------------------------  | ------------- | ----------------  |
+06/09/2019 11:00          |  5            |  2                |
+06/09/2019 12:00          |  61           |  1                |
+
+We will also need to create negative observations. In this small example, there would be no crash accidents in Precinct 61 at 11AM, and the same could be said for Precinct 5 at 12AM. For the real dataset, this imputation of negative observations was done for all possible permutations of precincts (77 possible precincts) and hourly bins (24 hourly bins), but it is not shown in the example due to its length. Therefore, for each day, there are a total of 1848 possible observations, whether positive or negative. CRASH_BINARY SUM for these negative observations are assigned a numeric value of 0.
+
+ROUNDEDCRASH DATETIME     |  PRECINCT     | CRASH_BINARY SUM  |
+------------------------  | ------------- | ----------------  |
+...                       |  ...          |  ...              |
+06/09/2019 10:00          |  61           |  0                |
+06/09/2019 11:00          |  5            |  2                |
+06/09/2019 11:00          |  61           |  0                |
+06/09/2019 12:00          |  5            |  0                |
+06/09/2019 12:00          |  61           |  1                |
+06/09/2019 13:00          |  5            |  0                |
+...                       |  ...          |  ...              |
+
+##Split Datetime into MONTH, WEEK, DAY, WEEKDAY, and HOUR
+Lastly, for each datetime observation, the datetime was split into its corresponding month (month of the year), week (week of the year), day (day of the month), weekday (0 to 6, where 0 represents Monday, and 6 represents Sunday), and of course hour (in 24-hour time).
+
+ROUNDEDCRASH DATETIME     |  PRECINCT     | CRASH_BINARY SUM  | MONTH |  WEEK |  DAY |  WEEKDAY | HOUR |
+------------------------  | ------------- | ----------------  | ----- | ----- | ---- | -------- | ---- |
+...                       |  ...          |  ...              | ...   | ...   | ...  | ...      | ...  | 
+06/09/2019 10:00          |  61           |  0                | 9     | 36    | 6    | 4        | 10   |
+06/09/2019 11:00          |  5            |  2                | 9     | 36    | 6    | 4        | 11   |
+06/09/2019 11:00          |  61           |  0                | 9     | 36    | 6    | 4        | 11   |
+06/09/2019 12:00          |  5            |  0                | 9     | 36    | 6    | 4        | 12   |
+06/09/2019 12:00          |  61           |  1                | 9     | 36    | 6    | 4        | 12   |
+06/09/2019 13:00          |  5            |  0                | 9     | 36    | 6    | 4        | 13   |
+...                       |  ...          |  ...              | ...   |  ...  | ...  | ...      | ...  |
+
+# Models
+## Stochastic Gradient Boosting (gbm)
+Stochastic Gradient Boosting is a method of supervised learning, where it continuously iterates over each tree one at a time to boost the performance of its weaker learners. Unlike other types of Gradient Boosting algorithms, Stochastic Gradient Boosting allows a base learner to draw samples randomly from the training set. There were a few hyperparamters to tune: `n.trees` denotes the number of trees, `interaction.depth` denotes the maximum depth of each tree, `n.minobsinnode` denotes the minimum number of observations in the final node of the trees, and `shrinkage` denotes the shrinkage, or learning rate for each tree. We used a grid search for finding the appropriate hyperparameters for gbm, with values of 10 and 20 for `interaction.depth`, and values of 50, 100, and 250 for `n.trees`. For the other hyperparameters, we left `n.minobsinnode` at 10, and `shrinkage` at 0.1. We found the gbm model performed the best, in terms of metrics, at a `interaction.depth` of 20, and a `n.trees` of 250, although doing so also increased the time to train the gbm model. 
+
+For R,
+## Random Forest (rf)
+Random Forests/Decision Trees is an ensemble learning method for classification and regression problems. Using a large number of individual decision trees, the one with the most votes is chosen as the prediction. There are two hyperparameters to tune: `ntree` and `mtry`. `ntree` denotes the number of trees, whereas `mtry` denotes the number of variables to use for splitting at each tree node. We decided to use a `ntree` of 250, as for a `ntree` size any larger than 250 resulted in a significantly longer training time, and memory overflow issues. We also used a `mtry` of 2, as this was the default and recommended number, which was calculated based on the rounded down square root of the cardinality of predictors (http://code.env.duke.edu/projects/mget/export/HEAD/MGET/Trunk/PythonPackage/dist/TracOnlineDocumentation/Documentation/ArcGISReference/RandomForestModel.FitToArcGISTable.html). 
+
+## KNN (knn)
+K-Nearest Neighbour is a prediction algorithm used for classification and regression problems. It works by taking each point in the dataset, and looks at k-nearest neighbours to decide which class a particular point belongs to. A disadvantage of KNN is that the features have to be scaled and normalized. THis itself was not an issue for this particular model, as all features except `Precint` were numeric. There is only one hyperparamter to tune for KNN, which is the `k` number. `k` denotes the nearest number of neighouring points to calculate the Euclidean distance from. We tried a variety of `k` parameters, ranging from 3, 5, 7, 9, and 11, but changing the `k` parameter achieved negligble prediction improvements in our metrics.
