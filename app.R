@@ -11,10 +11,11 @@ library(shiny)
 library(rpart)
 library(leaflet)
 library(ggplot2)
+library(htmltools)
 
 # Load the once per session stuff here; most efficient outside of server/ui functions
 load("fittedRegTreeModel.rda")
-precinctNum <- read.csv("precinct.csv")
+precinctNum <- read.csv("precincts.csv")
 precinctMap <- read_sf('geo_export_32d06294-3e95-408c-86e3-7a17a84f9c0e.shp', stringsAsFactors=FALSE)
 
 # Define UI for application that draws a histogram
@@ -60,7 +61,7 @@ ui <- fluidPage(
                          "Predict!")
         ),
 
-        # Show a plot of the generated distribution
+        # Show a beautiful data!
         mainPanel(
             
             # Can use tags$xxx() to represent xxx html tags, HTML("html stuff") to interpret HTML
@@ -95,35 +96,41 @@ server <- function(input, output) {
     crashHour <- reactive({input$crashhour})
     crashDayOfWeek <- reactive({input$crashdayofweek})
     
-   
+    output$mymap <- renderLeaflet({
+        leaflet(precinctMap) %>%
+            addTiles() %>%
+            setView(-74.00, 40.71, zoom = 10) %>%
+            addPolygons(color = "#666666", weight = 1, smoothFactor = 0.5,
+                        opacity = 1.0, fillOpacity = 0.5,
+                        fillColor = ~colorBin("YlOrRd",c(1,100), bins = 3, pretty = TRUE),
+                        highlightOptions = highlightOptions(color = "white", weight = 2,
+                                                            bringToFront = TRUE),
+                        popup = ~htmlEscape(precinct)) %>%
+            addProviderTiles("CartoDB.Positron")})
+        
     # run code with eventReactive() or observeEvent()? hmmmm.
     #output$predictedval <- 
-        observeEvent(input$predictbutton, {
-                                # Make a dataframe from the inputs. Week has no consequence to this test model I think, using 1. 
-                                # Precinct we iterate starting at 1.
-                                precinct <- as.character(precinctNum$Precinct.No)
-                                month <- as.integer(crashMonth())
-                                week <- as.integer(1)
-                                day <- as.integer(crashDay())
-                                weekday = as.integer(crashDayOfWeek())
-                                hour = as.integer(crashHour())
-                                predictMe <- data.frame(precinct, month, week, day, weekday, hour, stringsAsFactors = FALSE)
-                                predictedValue <- predict(regTreeModel, predictMe)
-                                print(as.data.frame(predictedValue))
-                                output$mymap <- renderLeaflet({
-                                    leaflet(precinctMap) %>%
-                                    addTiles() %>%
-                                    setView(-74.00, 40.71, zoom = 10)%>%
-                                    addPolygons(color = "#666666", weight = 1, smoothFactor = 0.5,
-                                                opacity = 1.0, fillOpacity = 0.5,
-                                                fillColor = ~colorBin("YlOrRd",c(1,100), bins = 3, pretty = TRUE),
-                                                highlightOptions = highlightOptions(color = "white", weight = 2,
-                                                                                    bringToFront = TRUE)) %>%
-                                    addProviderTiles("CartoDB.Positron")}
-                                )
-                                })
-    
+    observeEvent(input$predictbutton, {
+                            # Make a dataframe from the inputs. Week has no consequence to this test model I think, using 1. 
+                            precinct <- as.character(precinctNum$Precinct.No)
+                            month <- as.integer(crashMonth())
+                            week <- as.integer(1)
+                            day <- as.integer(crashDay())
+                            weekday = as.integer(crashDayOfWeek())
+                            hour = as.integer(crashHour())
+                            predictMe <- data.frame(precinct, month, week, day, weekday, hour, stringsAsFactors = FALSE)
+                            predictedVals <- predict(regTreeModel, predictMe)
+                            print(predictedVals)
+                            }
+    )
     # The prediction logic and output to UI.
+    # observe({leafletProxy("mymap", precinctMap) %>%
+    #     clearShapes() %>%
+    #     addPolygons(color = "#BBBBBB", weight = 1, smoothFactor = 0.5,
+    #                 opacity = 1.0, fillOpacity = 0.5,
+    #                 fillColor = ~colorBin("YlOrRd",c(1,100), bins = 3, pretty = TRUE),
+    #                 highlightOptions = highlightOptions(color = "white", weight = 2,
+    #                                                     bringToFront = TRUE))})
 }
 
 # Run the application 
