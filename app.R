@@ -14,9 +14,9 @@ library(ggplot2)
 library(htmltools)
 
 # Load the once per session stuff here; most efficient outside of server/ui functions
-load("fittedRegTreeModel.rda")
-precinctNum <- read.csv("precincts.csv")
-precinctMap <- read_sf('geo_export_32d06294-3e95-408c-86e3-7a17a84f9c0e.shp', stringsAsFactors=FALSE)
+load("./www/fittedRegTreeModel.rda")
+precinctNum <- read.csv("./www/precincts.csv")
+precinctMap <- read_sf('./www/geo_export_32d06294-3e95-408c-86e3-7a17a84f9c0e.shp', stringsAsFactors=FALSE)
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
@@ -121,6 +121,20 @@ server <- function(input, output) {
                             predictMe <- data.frame(precinct, month, week, day, weekday, hour, stringsAsFactors = FALSE)
                             predictedVals <- predict(regTreeModel, predictMe)
                             print(predictedVals)
+                            
+                            # The prediction logic and output to UI.
+                            binpal <- colorBin("Reds", predictedVals, 3, pretty = FALSE)
+                            output$mymap <- renderLeaflet({
+                                leaflet(precinctMap) %>%
+                                addTiles() %>%
+                                setView(-74.00, 40.71, zoom = 10) %>%
+                                clearShapes() %>%
+                                addPolygons(color = ~binpal(predictedVals), weight = 1, smoothFactor = 0.5,
+                                            opacity = 1.0, fillOpacity = 0.5,
+                                            highlightOptions = highlightOptions(color = "white", weight = 2,
+                                                                                bringToFront = TRUE),
+                                            popup = ~htmlEscape(precinct)) %>%
+                                addProviderTiles("CartoDB.Positron")})
                             }
     )
     # The prediction logic and output to UI.
@@ -128,7 +142,7 @@ server <- function(input, output) {
     #     clearShapes() %>%
     #     addPolygons(color = "#BBBBBB", weight = 1, smoothFactor = 0.5,
     #                 opacity = 1.0, fillOpacity = 0.5,
-    #                 fillColor = ~colorBin("YlOrRd",c(1,100), bins = 3, pretty = TRUE),
+    #                 fillColor = ~colorBin("YlOrRd",c(1,100), bins = 3, pretty = FALSE),
     #                 highlightOptions = highlightOptions(color = "white", weight = 2,
     #                                                     bringToFront = TRUE))})
 }
