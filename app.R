@@ -66,14 +66,21 @@ ui <- fluidPage(
             # Can use tags$xxx() to represent xxx html tags, HTML("html stuff") to interpret HTML
             tags$p("Check out our:",
                    tags$a(href = "https://github.com/patrick-osborne/CSML1000-Group-10-assignment-1", "Github")),
-            leaflet(precinctMap) %>%
-                addTiles() %>%
-                setView(-74.00, 40.71, zoom = 10)%>%
-                addPolygons(popup = ~precinct) %>%
-                addProviderTiles("CartoDB.Positron")
             
+            #pal <- colorNumeric(palette = "Rd", domain = range(1:77, na.rm=T)),
+            
+            # Use leaflet to map the precincts onto NYC.
+            # leaflet(precinctMap) %>%
+            #     addTiles() %>%
+            #     setView(-74.00, 40.71, zoom = 10)%>%
+            #     addPolygons(color = "#666666", weight = 1, smoothFactor = 0.5,
+            #                 opacity = 1.0, fillOpacity = 0.5,
+            #                 fillColor = ~colorBin("YlOrRd",c(1,100), bins = 3, pretty = TRUE),
+            #                 highlightOptions = highlightOptions(color = "white", weight = 2,
+            #                                                     bringToFront = TRUE)) %>%
+            #     addProviderTiles("CartoDB.Positron"),
             #tags$h3("predictedvals in console right now"),
-            #plotOutput("display"),
+            leafletOutput("mymap")
         )
     )
 )
@@ -94,16 +101,26 @@ server <- function(input, output) {
         observeEvent(input$predictbutton, {
                                 # Make a dataframe from the inputs. Week has no consequence to this test model I think, using 1. 
                                 # Precinct we iterate starting at 1.
-                                precincts <- as.character(precinctNum$Precinct.No)
+                                precinct <- as.character(precinctNum$Precinct.No)
                                 month <- as.integer(crashMonth())
                                 week <- as.integer(1)
                                 day <- as.integer(crashDay())
                                 weekday = as.integer(crashDayOfWeek())
                                 hour = as.integer(crashHour())
-                                predictMe <- data.frame(precincts, month, week, day, weekday, hour, stringsAsFactors = FALSE)
+                                predictMe <- data.frame(precinct, month, week, day, weekday, hour, stringsAsFactors = FALSE)
                                 predictedValue <- predict(regTreeModel, predictMe)
                                 print(as.data.frame(predictedValue))
-                                #output$display <- renderPlot({ggplot(as.data.frame(predictedValue)) + geom_bar(aes(x = precinct))})
+                                output$mymap <- renderLeaflet({
+                                    leaflet(precinctMap) %>%
+                                    addTiles() %>%
+                                    setView(-74.00, 40.71, zoom = 10)%>%
+                                    addPolygons(color = "#666666", weight = 1, smoothFactor = 0.5,
+                                                opacity = 1.0, fillOpacity = 0.5,
+                                                fillColor = ~colorBin("YlOrRd",c(1,100), bins = 3, pretty = TRUE),
+                                                highlightOptions = highlightOptions(color = "white", weight = 2,
+                                                                                    bringToFront = TRUE)) %>%
+                                    addProviderTiles("CartoDB.Positron")}
+                                )
                                 })
     
     # The prediction logic and output to UI.
