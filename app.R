@@ -61,26 +61,14 @@ ui <- fluidPage(
                          "Predict!")
         ),
 
-        # Show a beautiful data!
+        # Show beautiful visuals to the right of the sidepanel!
         mainPanel(
             
             # Can use tags$xxx() to represent xxx html tags, HTML("html stuff") to interpret HTML
             tags$p("Check out our:",
                    tags$a(href = "https://github.com/patrick-osborne/CSML1000-Group-10-assignment-1", "Github")),
             
-            #pal <- colorNumeric(palette = "Rd", domain = range(1:77, na.rm=T)),
-            
-            # Use leaflet to map the precincts onto NYC.
-            # leaflet(precinctMap) %>%
-            #     addTiles() %>%
-            #     setView(-74.00, 40.71, zoom = 10)%>%
-            #     addPolygons(color = "#666666", weight = 1, smoothFactor = 0.5,
-            #                 opacity = 1.0, fillOpacity = 0.5,
-            #                 fillColor = ~colorBin("YlOrRd",c(1,100), bins = 3, pretty = TRUE),
-            #                 highlightOptions = highlightOptions(color = "white", weight = 2,
-            #                                                     bringToFront = TRUE)) %>%
-            #     addProviderTiles("CartoDB.Positron"),
-            #tags$h3("predictedvals in console right now"),
+            # UI receive and output the leaflet
             leafletOutput("mymap")
         )
     )
@@ -89,27 +77,25 @@ ui <- fluidPage(
 # Define server logic required to draw a histogram
 server <- function(input, output) {
     
-    # use reactive() to have immediate update from UI interaction, with caching
-    # use isolate() to not update from UI interaction
+    # Use reactive() to have immediate update from UI interaction, with caching
     crashMonth <- reactive({input$crashmonth})
     crashDay <- reactive({input$crashday})
     crashHour <- reactive({input$crashhour})
     crashDayOfWeek <- reactive({input$crashdayofweek})
     
+    # Render the map for the first time
     output$mymap <- renderLeaflet({
         leaflet(precinctMap) %>%
             addTiles() %>%
             setView(-74.00, 40.71, zoom = 10) %>%
-            addPolygons(color = "#666666", weight = 1, smoothFactor = 0.5,
+            addPolygons(color = "#777777", weight = 1, smoothFactor = 0.5,
                         opacity = 1.0, fillOpacity = 0.5,
-                        fillColor = ~colorBin("YlOrRd",c(1,100), bins = 3, pretty = TRUE),
                         highlightOptions = highlightOptions(color = "white", weight = 2,
                                                             bringToFront = TRUE),
-                        popup = ~htmlEscape(precinct)) %>%
+                        popup = ~htmlEscape(paste("Precinct #:", precinct))) %>%
             addProviderTiles("CartoDB.Positron")})
         
-    # run code with eventReactive() or observeEvent()? hmmmm.
-    #output$predictedval <- 
+    # React to a the button click
     observeEvent(input$predictbutton, {
                             # Make a dataframe from the inputs. Week has no consequence to this test model I think, using 1. 
                             precinct <- as.character(precinctNum$Precinct.No)
@@ -120,31 +106,37 @@ server <- function(input, output) {
                             hour = as.integer(crashHour())
                             predictMe <- data.frame(precinct, month, week, day, weekday, hour, stringsAsFactors = FALSE)
                             predictedVals <- predict(regTreeModel, predictMe)
-                            print(predictedVals)
+                            predictedVals <- predictedVals * 100
                             
                             # The prediction logic and output to UI.
-                            binpal <- colorBin("Reds", predictedVals, 3, pretty = FALSE)
+                            # "Breaks are not unique" here would mean that the probability is the same throughout; it complains.
+                            binpal <- colorBin("YlOrRd", predictedVals, 3, pretty = TRUE)
                             output$mymap <- renderLeaflet({
                                 leaflet(precinctMap) %>%
+                                clearShapes() %>%
                                 addTiles() %>%
                                 setView(-74.00, 40.71, zoom = 10) %>%
-                                clearShapes() %>%
                                 addPolygons(color = ~binpal(predictedVals), weight = 1, smoothFactor = 0.5,
                                             opacity = 1.0, fillOpacity = 0.5,
                                             highlightOptions = highlightOptions(color = "white", weight = 2,
                                                                                 bringToFront = TRUE),
-                                            popup = ~htmlEscape(precinct)) %>%
+                                            popup = ~htmlEscape(paste("Precinct #:", precinct))) %>%
+                                addLegend(pal = binpal, values = ~predictedVals, 
+                                          title = "Probability of crash", 
+                                          labFormat = labelFormat(suffix = "%"),
+                                          opacity = 1) %>%
                                 addProviderTiles("CartoDB.Positron")})
                             }
     )
     # The prediction logic and output to UI.
-    # observe({leafletProxy("mymap", precinctMap) %>%
+    # THIS: leafletProxy doesn't work for some reason. Since this doesn't work, the app is less performant.
+    # leafletProxy("mymap", precinctMap) %>%
     #     clearShapes() %>%
     #     addPolygons(color = "#BBBBBB", weight = 1, smoothFactor = 0.5,
     #                 opacity = 1.0, fillOpacity = 0.5,
     #                 fillColor = ~colorBin("YlOrRd",c(1,100), bins = 3, pretty = FALSE),
     #                 highlightOptions = highlightOptions(color = "white", weight = 2,
-    #                                                     bringToFront = TRUE))})
+    #                                                     bringToFront = TRUE))
 }
 
 # Run the application 
