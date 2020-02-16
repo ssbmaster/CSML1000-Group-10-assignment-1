@@ -87,7 +87,8 @@ print(table(trainData_downsampled$did_crash_happen))
 
 
 gbm.trainControl = trainControl(
-  method = "cv", number = 3, # it takes forever for 10 - fold 
+  method = "cv", 
+  number = 3, # it takes forever for 10 - fold 
   # Estimate class probabilities
   classProbs = TRUE,
   # Evaluate performance using the following function
@@ -107,8 +108,10 @@ memory.limit(size=30000)
 
 #tuneGrid
 gbmGrid <- expand.grid(
-  interaction.depth = c(5, 10),
-  n.trees = c(25, 50, 100),
+  #interaction.depth = c(10, 20),
+  #n.trees = c(50, 100, 250),
+  interaction.depth = c(20),
+  n.trees = c(200),
   n.minobsinnode = 10,
   shrinkage = .1
 )
@@ -155,3 +158,22 @@ confusionMatrix(data = pred.model_gbm.raw, testData$did_crash_happen)
 #summary of model 
 summary(model_gbm)
 
+#see the different metrics and roc curve this model scored against trainData_downsampled
+pred.model_gbm.train.prob = predict(model_gbm, newdata = trainData_downsampled, type="prob")
+pred.model_gbm.train.raw = predict(model_gbm, newdata = trainData_downsampled)
+
+roc.model_gbm.train = pROC::roc(
+  trainData_downsampled$did_crash_happen, 
+  as.vector(ifelse(pred.model_gbm.train.prob[,"yes"] >0.5, 1,0))
+)
+auc.model_gbm.train = pROC::auc(roc.model_gbm.train)
+print(auc.model_gbm.train)
+
+#plot ROC curve
+plot.roc(roc.model_gbm.train, print.auc = TRUE, col = 'blue' , print.thres = "best" )
+
+#generate confusion matrix, as well as other metrics such as accuracy, balanced accuracy
+confusionMatrix(data = pred.model_gbm.train.raw, trainData_downsampled$did_crash_happen)
+
+# Save the model into a file
+save(model_gbm, file="caret_gbm.rda")

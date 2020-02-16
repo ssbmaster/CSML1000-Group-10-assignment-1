@@ -26,10 +26,12 @@ data$did_crash_happen = as.factor(
 )
 
 set.seed(123)
-data_newer = data[data$timestamp > '2018-01-27', ]
-data_sample = sample.split(data_newer$hour,SplitRatio=0.80)
-trainData = subset(data_newer, data_sample==TRUE)
-testData = subset(data_newer, data_sample==FALSE)
+# data_newer = data[data$timestamp > '2016-01-27', ]
+# data_sample = sample.split(data_newer$hour,SplitRatio=0.80)
+# trainData = subset(data_newer, data_sample==TRUE)
+# testData = subset(data_newer, data_sample==FALSE)
+trainData = data[data$timestamp > '2017-01-27' & data$timestamp < '2019-01-27', ]
+testData = data[data$timestamp > '2019-01-26', ]
 
 trainData <- select(trainData, -c(timestamp))
 testData <- select(testData, -c (timestamp))
@@ -63,8 +65,10 @@ testData_without_response_var = as.data.frame(lapply(testData[, 1:ncol(testData)
 #remove unnecessary data objects for library-knn
 rm(motor_collision_crash_clean_data, data, data_newer, data_sample, trainData)
 rm(trainData_upsampled)
-rm(trainData_downsampled, testData)
+#rm(trainData_downsampled, testData)
 gc()
+memory.limit()
+memory.limit(size=30000)
 
 set.seed(123)
 ptm_rf <- proc.time()
@@ -72,6 +76,29 @@ model_knn <- knn(
   trainData_downsampled_without_response_var,
   testData_without_response_var,
   cl = trainData_downsampled_response_column,
-  k=3 
+  k=5,
+  prob = TRUE #create probabilities so we can plot ROC
 )
 proc.time() - ptm_rf
+
+#probabilities 
+attributes(model_knn)$prob
+
+roc.model_knn = pROC::roc(
+  testData$did_crash_happen, 
+  as.vector(ifelse(attributes(model_knn)$prob >0.5, 1,0))
+  #ifelse(attributes(model_knn)$prob
+)
+auc.model_knn = pROC::auc(roc.model_knn)
+print(auc.model_knn)
+
+#plot ROC curve
+plot.roc(roc.model_knn, print.auc = TRUE, col = 'red' , print.thres = "best" )
+
+confusionMatrix(model_knn, testData_response_column)
+
+#summary of model_knn
+summary(auc.model_knn)
+
+# Save the model into a file
+save(model_knn, file="model_knn_5.rda")

@@ -66,8 +66,8 @@ model_rf = randomForest(
   data = trainData_downsampled,
   importance = TRUE,
   do.trace=10,
-  ntree = 500,
-  mtry = 5
+  ntree = 250,
+  mtry = 2
 )
 proc.time() - ptm_rf
 
@@ -88,3 +88,20 @@ confusionMatrix(data = pred.model_rf.raw, testData$did_crash_happen)
 
 #summary of model 
 summary(model_rf)
+
+#see the different metrics and roc curve this model scored against trainData_downsampled
+pred.model_rf.train.prob = predict(model_rf, newdata = trainData_downsampled, type="prob")
+pred.model_rf.train.raw = predict(model_rf, newdata = trainData_downsampled)
+
+roc.model_rf.train = pROC::roc(
+  trainData_downsampled$did_crash_happen, 
+  as.vector(ifelse(pred.model_rf.train.prob[,"yes"] >0.5, 1,0))
+)
+auc.model_rf.train = pROC::auc(roc.model_rf.train)
+print(auc.model_rf.train)
+
+#plot ROC curve
+plot.roc(roc.model_rf.train, print.auc = TRUE, col = 'blue' , print.thres = "best" )
+
+#generate confusion matrix, as well as other metrics such as accuracy, balanced accuracy
+confusionMatrix(data = pred.model_rf.train.raw, trainData_downsampled$did_crash_happen)

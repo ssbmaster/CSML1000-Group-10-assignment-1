@@ -1,5 +1,4 @@
 #install.packages('dplyr')
-#install.packages('gbm')
 #install.packages('caTools')
 #install.packages('pROC')
 #install.packages('doParallel')
@@ -9,7 +8,6 @@
 #install.packages('ROSE')
 
 library(dplyr)
-library(gbm)
 library(caTools)
 library(pROC)
 library(doParallel)
@@ -86,7 +84,7 @@ trainData_downsampled = downSample(
 print(table(trainData_downsampled$did_crash_happen))
 
 
-gbm.trainControl = trainControl(
+rf.trainControl = trainControl(
   method = "cv", number = 3, # it takes forever for 10 - fold 
   # Estimate class probabilities
   classProbs = TRUE,
@@ -106,24 +104,23 @@ memory.limit()
 memory.limit(size=30000)
 
 #tuneGrid
-rfGrid <- expand.grid(
-  mtry
-)
+mtry <- sqrt(ncol(testData))
+rfGrid <- expand.grid(.mtry=mtry)
 
 #train model
 set.seed(789)
 ptm_rf <- proc.time()
-model_gbm <- train(
+model_rf <- train(
   did_crash_happen ~ . - timestamp,
   #data = data[trainSlices[[1]],],
   data = trainData_downsampled,
   #data = train_data,
-  method = "gbm",
+  method = "rf",
   #family="gaussian",
   #distribution = "gaussian",
-  trControl = gbm.trainControl,
+  trControl = rf.trainControl,
   #tuneLength = 5
-  tuneGrid = gbmGrid
+  tuneGrid = rfGrid
 )
 proc.time() - ptm_rf
 
@@ -131,25 +128,23 @@ proc.time() - ptm_rf
 #stopCluster(cl)
 
 #make predictions aginst testData with the new model 
-print(model_gbm)
-pred.model_gbm.prob = predict(model_gbm, newdata = testData, type="prob")
-pred.model_gbm.raw = predict(model_gbm, newdata = testData)
+print(model_rf)
+pred.model_rf.prob = predict(model_rf, newdata = testData, type="prob")
+pred.model_rf.raw = predict(model_rf, newdata = testData)
 
 
-roc.model_gbm = pROC::roc(
+roc.model_rf = pROC::roc(
   testData$did_crash_happen, 
-  as.vector(ifelse(pred.model_gbm.prob[,"yes"] >0.5, 1,0))
+  as.vector(ifelse(pred.model_rf.prob[,"yes"] >0.5, 1,0))
 )
-auc.model_gbm = pROC::auc(roc.model_gbm)
-print(auc.model_gbm)
+auc.model_rf = pROC::auc(roc.model_rf)
+print(auc.model_rf)
 
 #plot ROC curve
-plot.roc(roc.model_gbm, print.auc = TRUE, col = 'red' , print.thres = "best" )
+plot.roc(roc.model_rf, print.auc = TRUE, col = 'red' , print.thres = "best" )
 
 #generate confusion matrix, as well as other metrics such as accuracy, balanced accuracy
-confusionMatrix(data = pred.model_gbm.raw, testData$did_crash_happen)
+confusionMatrix(data = pred.model_rf.raw, testData$did_crash_happen)
 
 #summary of model 
-summary(model_gbm)
-
-d
+summary(model_rf)

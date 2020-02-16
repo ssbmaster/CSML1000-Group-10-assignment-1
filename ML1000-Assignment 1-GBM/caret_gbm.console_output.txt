@@ -1,0 +1,508 @@
+R version 3.6.2 (2019-12-12) -- "Dark and Stormy Night"
+Copyright (C) 2019 The R Foundation for Statistical Computing
+Platform: x86_64-w64-mingw32/x64 (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> #install.packages('dplyr')
+> #install.packages('gbm')
+> #install.packages('caTools')
+> #install.packages('pROC')
+> #install.packages('doParallel')
+> #install.packages('caret')
+> #install.packages('e1071', dependencies=TRUE)
+> #install.packages('DMwR')
+> #install.packages('ROSE')
+> 
+> library(dplyr)
+
+Attaching package: ‘dplyr’
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+> library(gbm)
+Loaded gbm 2.1.5
+> library(caTools)
+> library(pROC)
+Type 'citation("pROC")' for a citation.
+
+Attaching package: ‘pROC’
+
+The following objects are masked from ‘package:stats’:
+
+    cov, smooth, var
+
+> library(doParallel)
+Loading required package: foreach
+Loading required package: iterators
+Loading required package: parallel
+> library(caret)
+Loading required package: lattice
+Loading required package: ggplot2
+> #library(DMwR)
+> #library(ROSE)
+> library(MLmetrics)
+
+Attaching package: ‘MLmetrics’
+
+The following objects are masked from ‘package:caret’:
+
+    MAE, RMSE
+
+The following object is masked from ‘package:base’:
+
+    Recall
+
+> 
+> #setup cluster (forget about this lmao)
+> #cl <- makePSOCKcluster(2) #4 clusters on my machine
+> #registerDoParallel(cl)
+> 
+> 
+> motor_collision_crash_clean_data <- read.csv("C:\\Users\\alexf\\Documents\\CSML1000\\Assignments\\CSML1000-Group-10-assignment-1\\data\\motor_vehicle_collisions_crashes_cleaned.csv")
+> 
+> #data <- select(motor_collision_crash_clean_data, -c(id, timestamp, total_number_of_crashes))
+> data <- select(motor_collision_crash_clean_data, -c(id, total_number_of_crashes))
+> 
+> data$timestamp = as.Date(data$timestamp)
+> data$precinct = as.factor(data$precinct)
+> data$month = as.numeric(data$month)
+> data$week = as.numeric(data$week)
+> data$day = as.numeric(data$day)
+> data$weekday = as.numeric(data$weekday)
+> data$hour = as.numeric(data$hour)
+> data$did_crash_happen = as.factor(
++   ifelse(data$did_crash_happen ==  0, "no", "yes")
++ )
+> 
+> #time series split
+> # myTimeControl <- trainControl(method = "timeslice",
+> #                               initialWindow = 674520,
+> #                               horizon = 674520,
+> #                               fixedWindow =  TRUE,
+> #                               #allowParallel = TRUE,
+> #                               verboseIter = TRUE#,
+> #                               #sampling = "smote"
+> #                               )
+> 
+> #create time slices
+> # timeSlices <- createTimeSlices(1:nrow(data),
+> #                                initialWindow = 36, horizon = 12, fixedWindow = TRUE)
+> # trainSlices <- timeSlices[[1]]
+> # testSlices <- timeSlices[[2]]
+> 
+> #separate the data into train and test
+> #because we run into memory issues 
+> #train_data will be the data from 2017-01-
+> #test_data will be from 2019-01-26 till 2020-01-26
+> trainData_older = data[data$timestamp < '2017-01-27', ]
+> trainData = data[data$timestamp > '2017-01-27' & data$timestamp < '2019-01-27', ]
+> testData = data[data$timestamp > '2019-01-26', ]
+> 
+> #splitting by timestamp
+> # splitIdx = createDataPartition(data$did_crash_happen, p=0.7, list = FALSE)  # 70% training data, 30% testing
+> # trainData = data[splitIdx, ]
+> # testData = data[-splitIdx, ]
+> 
+> #we will need to upsample the trainData
+> set.seed(123)
+> columns = colnames(trainData)
+> trainData_upsampled = upSample(
++   x = trainData[, columns[columns != "did_crash_happen"] ], 
++   y = trainData$did_crash_happen, list = F, yname = "did_crash_happen"
++ )
+> print(table(trainData_upsampled$did_crash_happen))
+
+     no     yes 
+1011095 1011095 
+> 
+> set.seed(456)
+> #try downsampling instead...
+> trainData_downsampled = downSample(
++   x = trainData[, columns[columns != "did_crash_happen"] ], 
++   y = trainData$did_crash_happen, list = F, yname = "did_crash_happen"
++ )
+> print(table(trainData_downsampled$did_crash_happen))
+
+    no    yes 
+336097 336097 
+> 
+> 
+> gbm.trainControl = trainControl(
++   method = "cv", 
++   number = 3, # it takes forever for 10 - fold 
++   # Estimate class probabilities
++   classProbs = TRUE,
++   # Evaluate performance using the following function
++   summaryFunction = twoClassSummary,
++   allowParallel = TRUE,
++   verbose = TRUE
++ )
+> 
+> #make sure we get rid as much useless data objects in R environment as possible
+> gc()
+            used  (Mb) gc trigger   (Mb)  max used   (Mb)
+Ncells   2168704 115.9    6063844  323.9   7277218  388.7
+Vcells 129923059 991.3  233170710 1779.0 193796705 1478.6
+> rm(motor_collision_crash_clean_data, data, trainData, trainData_older)
+> rm(trainData_upsampled)
+> #rm(trainData_downsampled)
+> gc()
+           used  (Mb) gc trigger   (Mb)  max used   (Mb)
+Ncells  2102206 112.3    6063844  323.9   7277218  388.7
+Vcells 15720254 120.0  186536568 1423.2 193796705 1478.6
+> memory.limit()
+[1] 16194
+> memory.limit(size=30000)
+[1] 30000
+> 
+> #tuneGrid
+> gbmGrid <- expand.grid(
++   #interaction.depth = c(10, 20),
++   #n.trees = c(50, 100, 250),
++   interaction.depth = c(20),
++   n.trees = c(200),
++   n.minobsinnode = 10,
++   shrinkage = .1
++ )
+> 
+> #train model
+> set.seed(789)
+> ptm_rf <- proc.time()
+> model_gbm <- train(
++   did_crash_happen ~ . - timestamp,
++   #data = data[trainSlices[[1]],],
++   data = trainData_downsampled,
++   #data = train_data,
++   method = "gbm",
++   #family="gaussian",
++   #distribution = "gaussian",
++   trControl = gbm.trainControl,
++   #tuneLength = 5
++   tuneGrid = gbmGrid
++ )
++ Fold1: interaction.depth=20, n.trees=200, n.minobsinnode=10, shrinkage=0.1 
+Iter   TrainDeviance   ValidDeviance   StepSize   Improve
+     1        1.3644             nan     0.1000    0.0108
+     2        1.3465             nan     0.1000    0.0090
+     3        1.3318             nan     0.1000    0.0073
+     4        1.3194             nan     0.1000    0.0062
+     5        1.3092             nan     0.1000    0.0051
+     6        1.3005             nan     0.1000    0.0043
+     7        1.2931             nan     0.1000    0.0036
+     8        1.2870             nan     0.1000    0.0030
+     9        1.2812             nan     0.1000    0.0028
+    10        1.2768             nan     0.1000    0.0022
+    20        1.2468             nan     0.1000    0.0009
+    40        1.2210             nan     0.1000    0.0004
+    60        1.2131             nan     0.1000    0.0001
+    80        1.2087             nan     0.1000    0.0001
+   100        1.2064             nan     0.1000    0.0000
+   120        1.2045             nan     0.1000    0.0000
+   140        1.2028             nan     0.1000    0.0000
+   160        1.2014             nan     0.1000    0.0000
+   180        1.2003             nan     0.1000    0.0000
+   200        1.1992             nan     0.1000   -0.0000
+
+- Fold1: interaction.depth=20, n.trees=200, n.minobsinnode=10, shrinkage=0.1 
++ Fold2: interaction.depth=20, n.trees=200, n.minobsinnode=10, shrinkage=0.1 
+Iter   TrainDeviance   ValidDeviance   StepSize   Improve
+     1        1.3647             nan     0.1000    0.0108
+     2        1.3469             nan     0.1000    0.0089
+     3        1.3324             nan     0.1000    0.0073
+     4        1.3200             nan     0.1000    0.0062
+     5        1.3100             nan     0.1000    0.0050
+     6        1.3011             nan     0.1000    0.0044
+     7        1.2939             nan     0.1000    0.0036
+     8        1.2876             nan     0.1000    0.0031
+     9        1.2819             nan     0.1000    0.0028
+    10        1.2773             nan     0.1000    0.0023
+    20        1.2474             nan     0.1000    0.0008
+    40        1.2219             nan     0.1000    0.0003
+    60        1.2136             nan     0.1000    0.0001
+    80        1.2096             nan     0.1000    0.0000
+   100        1.2069             nan     0.1000    0.0000
+   120        1.2051             nan     0.1000    0.0000
+   140        1.2037             nan     0.1000   -0.0000
+   160        1.2021             nan     0.1000    0.0000
+   180        1.2010             nan     0.1000    0.0000
+   200        1.1998             nan     0.1000    0.0000
+
+- Fold2: interaction.depth=20, n.trees=200, n.minobsinnode=10, shrinkage=0.1 
++ Fold3: interaction.depth=20, n.trees=200, n.minobsinnode=10, shrinkage=0.1 
+Iter   TrainDeviance   ValidDeviance   StepSize   Improve
+     1        1.3646             nan     0.1000    0.0109
+     2        1.3465             nan     0.1000    0.0090
+     3        1.3321             nan     0.1000    0.0072
+     4        1.3197             nan     0.1000    0.0061
+     5        1.3094             nan     0.1000    0.0051
+     6        1.3007             nan     0.1000    0.0043
+     7        1.2935             nan     0.1000    0.0036
+     8        1.2872             nan     0.1000    0.0031
+     9        1.2821             nan     0.1000    0.0025
+    10        1.2766             nan     0.1000    0.0027
+    20        1.2465             nan     0.1000    0.0008
+    40        1.2217             nan     0.1000    0.0002
+    60        1.2133             nan     0.1000    0.0001
+    80        1.2094             nan     0.1000    0.0001
+   100        1.2070             nan     0.1000    0.0000
+   120        1.2051             nan     0.1000    0.0000
+   140        1.2036             nan     0.1000   -0.0000
+   160        1.2023             nan     0.1000   -0.0000
+   180        1.2011             nan     0.1000    0.0000
+   200        1.1999             nan     0.1000    0.0000
+
+- Fold3: interaction.depth=20, n.trees=200, n.minobsinnode=10, shrinkage=0.1 
+Aggregating results
+Fitting final model on full training set
+Iter   TrainDeviance   ValidDeviance   StepSize   Improve
+     1        1.3645             nan     0.1000    0.0108
+     2        1.3467             nan     0.1000    0.0088
+     3        1.3321             nan     0.1000    0.0072
+     4        1.3200             nan     0.1000    0.0061
+     5        1.3097             nan     0.1000    0.0051
+     6        1.3010             nan     0.1000    0.0043
+     7        1.2938             nan     0.1000    0.0035
+     8        1.2873             nan     0.1000    0.0033
+     9        1.2808             nan     0.1000    0.0032
+    10        1.2759             nan     0.1000    0.0024
+    20        1.2468             nan     0.1000    0.0011
+    40        1.2218             nan     0.1000    0.0004
+    60        1.2137             nan     0.1000    0.0001
+    80        1.2095             nan     0.1000    0.0000
+   100        1.2071             nan     0.1000    0.0000
+   120        1.2052             nan     0.1000    0.0000
+   140        1.2039             nan     0.1000   -0.0000
+   160        1.2028             nan     0.1000    0.0000
+   180        1.2018             nan     0.1000    0.0000
+   200        1.2009             nan     0.1000    0.0000
+
+Warning message:
+In train.default(x, y, weights = w, ...) :
+  The metric "Accuracy" was not in the result set. ROC will be used instead.
+> proc.time() - ptm_rf
+   user  system elapsed 
+5553.86    6.95 5572.39 
+> 
+> #when we are done with parallel processing needs
+> #stopCluster(cl)
+> 
+> #make predictions aginst testData with the new model 
+> print(model_gbm)
+Stochastic Gradient Boosting 
+
+672194 samples
+     7 predictor
+     2 classes: 'no', 'yes' 
+
+No pre-processing
+Resampling: Cross-Validated (3 fold) 
+Summary of sample sizes: 448129, 448130, 448129 
+Resampling results:
+
+  ROC        Sens       Spec     
+  0.7337738  0.6373428  0.7065669
+
+Tuning parameter 'n.trees' was held constant at a value of 200
+Tuning parameter 'interaction.depth' was held constant at a value of 20
+Tuning parameter 'shrinkage' was
+ held constant at a value of 0.1
+Tuning parameter 'n.minobsinnode' was held constant at a value of 10
+> pred.model_gbm.prob = predict(model_gbm, newdata = testData, type="prob")
+> pred.model_gbm.raw = predict(model_gbm, newdata = testData)
+> 
+> 
+> roc.model_gbm = pROC::roc(
++   testData$did_crash_happen, 
++   as.vector(ifelse(pred.model_gbm.prob[,"yes"] >0.5, 1,0))
++ )
+Setting levels: control = no, case = yes
+Setting direction: controls < cases
+> auc.model_gbm = pROC::auc(roc.model_gbm)
+> print(auc.model_gbm)
+Area under the curve: 0.6671
+> 
+> #plot ROC curve
+> plot.roc(roc.model_gbm, print.auc = TRUE, col = 'red' , print.thres = "best" )
+> 
+> #generate confusion matrix, as well as other metrics such as accuracy, balanced accuracy
+> confusionMatrix(data = pred.model_gbm.raw, testData$did_crash_happen)
+Confusion Matrix and Statistics
+
+          Reference
+Prediction     no    yes
+       no  326022  45000
+       yes 194551 109024
+                                         
+               Accuracy : 0.6449         
+                 95% CI : (0.6438, 0.646)
+    No Information Rate : 0.7717         
+    P-Value [Acc > NIR] : 1              
+                                         
+                  Kappa : 0.249          
+                                         
+ Mcnemar's Test P-Value : <2e-16         
+                                         
+            Sensitivity : 0.6263         
+            Specificity : 0.7078         
+         Pos Pred Value : 0.8787         
+         Neg Pred Value : 0.3591         
+             Prevalence : 0.7717         
+         Detection Rate : 0.4833         
+   Detection Prevalence : 0.5500         
+      Balanced Accuracy : 0.6671         
+                                         
+       'Positive' Class : no             
+                                         
+> 
+> #summary of model 
+> summary(model_gbm)
+                    var     rel.inf
+hour               hour 55.14687773
+weekday         weekday  6.58203449
+precinct22   precinct22  2.99763151
+precinct105 precinct105  1.94372435
+precinct109 precinct109  1.85141987
+precinct100 precinct100  1.82493282
+precinct75   precinct75  1.70001788
+precinct30   precinct30  1.44337407
+precinct26   precinct26  1.42091390
+precinct28   precinct28  1.40635616
+week               week  1.36866003
+precinct101 precinct101  1.18708092
+precinct9     precinct9  1.05268384
+precinct7     precinct7  0.99618770
+precinct108 precinct108  0.91074897
+precinct24   precinct24  0.89770733
+precinct114 precinct114  0.85772724
+day                 day  0.83319101
+precinct32   precinct32  0.71652046
+precinct6     precinct6  0.71566527
+precinct23   precinct23  0.70938059
+precinct88   precinct88  0.70385244
+precinct33   precinct33  0.67089981
+precinct81   precinct81  0.61288365
+precinct113 precinct113  0.53117777
+precinct106 precinct106  0.52022978
+precinct19   precinct19  0.49313553
+month             month  0.48360052
+precinct34   precinct34  0.47680408
+precinct20   precinct20  0.46893104
+precinct107 precinct107  0.42391889
+precinct41   precinct41  0.40656914
+precinct42   precinct42  0.39778583
+precinct47   precinct47  0.35988553
+precinct104 precinct104  0.35739223
+precinct76   precinct76  0.35347763
+precinct77   precinct77  0.32286455
+precinct102 precinct102  0.31932246
+precinct123 precinct123  0.31904249
+precinct67   precinct67  0.29630949
+precinct43   precinct43  0.28538424
+precinct111 precinct111  0.28505899
+precinct110 precinct110  0.27441188
+precinct18   precinct18  0.27406829
+precinct50   precinct50  0.22259311
+precinct40   precinct40  0.21865548
+precinct14   precinct14  0.21160608
+precinct90   precinct90  0.20949060
+precinct69   precinct69  0.19989500
+precinct115 precinct115  0.19109127
+precinct121 precinct121  0.17864518
+precinct72   precinct72  0.17448144
+precinct5     precinct5  0.17039842
+precinct60   precinct60  0.16169131
+precinct122 precinct122  0.12226093
+precinct66   precinct66  0.12189317
+precinct44   precinct44  0.12161486
+precinct48   precinct48  0.11104203
+precinct78   precinct78  0.10950138
+precinct103 precinct103  0.10770408
+precinct25   precinct25  0.10661276
+precinct61   precinct61  0.09750114
+precinct17   precinct17  0.09049925
+precinct83   precinct83  0.08717002
+precinct70   precinct70  0.08301464
+precinct13   precinct13  0.06981545
+precinct94   precinct94  0.06720380
+precinct71   precinct71  0.06215942
+precinct79   precinct79  0.05972526
+precinct73   precinct73  0.05855352
+precinct49   precinct49  0.05684983
+precinct10   precinct10  0.05102126
+precinct45   precinct45  0.05071608
+precinct62   precinct62  0.03805702
+precinct112 precinct112  0.03703454
+precinct46   precinct46  0.03259984
+precinct52   precinct52  0.03187964
+precinct63   precinct63  0.02561674
+precinct68   precinct68  0.02444052
+precinct120 precinct120  0.01909965
+precinct84   precinct84  0.01802290
+> #see the different metrics and roc curve this model scored against trainData_downsampled
+> pred.model_gbm.train.prob = predict(model_gbm, newdata = trainData_downsampled, type="prob")
+> pred.model_gbm.train.raw = predict(model_gbm, newdata = trainData_downsampled)
+> roc.model_gbm.train = pROC::roc(
++   trainData_downsampled$did_crash_happen, 
++   as.vector(ifelse(pred.model_gbm.train.prob[,"yes"] >0.5, 1,0))
++ )
+Setting levels: control = no, case = yes
+Setting direction: controls < cases
+> auc.model_gbm.train = pROC::auc(roc.model_gbm)
+> print(auc.model_gbm.train)
+Area under the curve: 0.6671
+> auc.model_gbm.train = pROC::auc(roc.model_gbm.train)
+> print(auc.model_gbm.train)
+Area under the curve: 0.6744
+> #plot ROC curve
+> plot.roc(roc.model_gbm.train, print.auc = TRUE, col = 'blue' , print.thres = "best" )
+> 
+> #generate confusion matrix, as well as other metrics such as accuracy, balanced accuracy
+> confusionMatrix(data = pred.model_gbm.train.raw, trainData_downsampled$did_crash_happen)
+Confusion Matrix and Statistics
+
+          Reference
+Prediction     no    yes
+       no  214400  97142
+       yes 121697 238955
+                                          
+               Accuracy : 0.6744          
+                 95% CI : (0.6733, 0.6756)
+    No Information Rate : 0.5             
+    P-Value [Acc > NIR] : < 2.2e-16       
+                                          
+                  Kappa : 0.3489          
+                                          
+ Mcnemar's Test P-Value : < 2.2e-16       
+                                          
+            Sensitivity : 0.6379          
+            Specificity : 0.7110          
+         Pos Pred Value : 0.6882          
+         Neg Pred Value : 0.6626          
+             Prevalence : 0.5000          
+         Detection Rate : 0.3190          
+   Detection Prevalence : 0.4635          
+      Balanced Accuracy : 0.6744          
+                                          
+       'Positive' Class : no              
+                                          
+> # Save the model into a file
+> save(model_gbm, file="caret_gbm.rda")

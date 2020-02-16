@@ -1,5 +1,7 @@
 data/Motor_Vehicle_Collisions_-_Crashes.csv
 data/motor_vehicle_collisions_crashes_cleaned.csv
 data/motor_vehicle_collisions_crashes_with_precinct.csv
+data/motor_vehicle_collisions_crashes_cleaned_v2.csv
 
 python/notebooks/.ipynb_checkpoints/*
+.Rproj.user
