@@ -1,0 +1,26 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1580782691816.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3913471723",
+    "id" : "25523D87",
+    "lastKnownWriteTime" : 1580786651,
+    "last_content_update" : 1580786651687,
+    "path" : "C:/Users/posborne/OneDrive - York University/Desktop/Certificate in Machine Learning/#R Projects/Assignment 1 Git/CSML1000-Group-10-assignment-1/ML1000-Assignment 1-Zip Code Classification Test/ZipCodeClassification.R",
+    "project_path" : "ZipCodeClassification.R",
+    "properties" : {
+        "cursorPosition" : "0,0",
+        "scrollLine" : "0",
+        "tempName" : "Untitled1"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
