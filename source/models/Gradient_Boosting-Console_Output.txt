@@ -1,0 +1,154 @@
+Stochastic Gradient Boosting 
+
+672194 samples
+     7 predictor
+     2 classes: 'no', 'yes' 
+
+No pre-processing
+Resampling: Cross-Validated (3 fold) 
+Summary of sample sizes: 448129, 448130, 448129 
+Resampling results across tuning parameters:
+
+  interaction.depth  n.trees  ROC        Sens       Spec     
+  10                  50      0.7228468  0.6177264  0.7085514
+  10                 100      0.7290669  0.6260157  0.7111757
+  10                 250      0.7329179  0.6306245  0.7123331
+  20                  50      0.7282240  0.6366882  0.6993904
+  20                 100      0.7322751  0.6367329  0.7054600
+  20                 250      0.7342399  0.6368697  0.7074892
+
+Tuning parameter 'shrinkage' was held constant at a value of 0.1
+Tuning parameter 'n.minobsinnode' was held constant at a value of 10
+ROC was used to select the optimal model using the largest value.
+The final values used for the model were n.trees = 250, interaction.depth = 20, shrinkage = 0.1 and n.minobsinnode = 10.
+> pred.model_gbm.prob = predict(model_gbm, newdata = testData, type="prob")
+> pred.model_gbm.raw = predict(model_gbm, newdata = testData)
+> 
+> 
+> roc.model_gbm = pROC::roc(
++   testData$did_crash_happen, 
++   as.vector(ifelse(pred.model_gbm.prob[,"yes"] >0.5, 1,0))
++ )
+Setting levels: control = no, case = yes
+Setting direction: controls < cases
+> auc.model_gbm = pROC::auc(roc.model_gbm)
+> print(auc.model_gbm)
+Area under the curve: 0.6673
+> 
+> #plot ROC curve
+> plot.roc(roc.model_gbm, print.auc = TRUE, col = 'red' , print.thres = "best" )
+> 
+> #generate confusion matrix, as well as other metrics such as accuracy, balanced accuracy
+> confusionMatrix(data = pred.model_gbm.raw, testData$did_crash_happen)
+Confusion Matrix and Statistics
+
+          Reference
+Prediction     no    yes
+       no  326251  44978
+       yes 194322 109046
+                                          
+               Accuracy : 0.6453          
+                 95% CI : (0.6441, 0.6464)
+    No Information Rate : 0.7717          
+    P-Value [Acc > NIR] : 1               
+                                          
+                  Kappa : 0.2495          
+                                          
+ Mcnemar's Test P-Value : <2e-16          
+                                          
+            Sensitivity : 0.6267          
+            Specificity : 0.7080          
+         Pos Pred Value : 0.8788          
+         Neg Pred Value : 0.3595          
+             Prevalence : 0.7717          
+         Detection Rate : 0.4836          
+   Detection Prevalence : 0.5503          
+      Balanced Accuracy : 0.6673          
+                                          
+       'Positive' Class : no              
+                                          
+> 
+> #summary of model 
+> summary(model_gbm)
+                    var     rel.inf
+hour               hour 54.43587715
+weekday         weekday  6.93323602
+precinct22   precinct22  2.92299431
+precinct105 precinct105  1.92515192
+precinct109 precinct109  1.84836750
+precinct100 precinct100  1.81723714
+precinct75   precinct75  1.68497346
+week               week  1.56614439
+precinct30   precinct30  1.42348521
+precinct26   precinct26  1.39707553
+precinct28   precinct28  1.39464875
+day                 day  1.23073792
+precinct101 precinct101  1.15631238
+precinct9     precinct9  1.04689758
+precinct7     precinct7  1.01213828
+precinct24   precinct24  0.90443925
+precinct108 precinct108  0.90372165
+precinct114 precinct114  0.83110163
+precinct88   precinct88  0.72106761
+precinct6     precinct6  0.69364229
+precinct32   precinct32  0.68779629
+precinct23   precinct23  0.66730663
+precinct33   precinct33  0.65125001
+precinct81   precinct81  0.60625366
+precinct113 precinct113  0.54221630
+precinct106 precinct106  0.53014210
+precinct19   precinct19  0.52383866
+month             month  0.52335854
+precinct20   precinct20  0.46133486
+precinct107 precinct107  0.43742900
+precinct34   precinct34  0.42524168
+precinct41   precinct41  0.41099914
+precinct42   precinct42  0.37624631
+precinct104 precinct104  0.36354451
+precinct76   precinct76  0.35947100
+precinct47   precinct47  0.35353448
+precinct123 precinct123  0.33795710
+precinct77   precinct77  0.32688631
+precinct102 precinct102  0.32269585
+precinct43   precinct43  0.31379077
+precinct67   precinct67  0.30336347
+precinct110 precinct110  0.27396804
+precinct18   precinct18  0.26230543
+precinct111 precinct111  0.26065647
+precinct50   precinct50  0.22667599
+precinct90   precinct90  0.21047803
+precinct115 precinct115  0.20021136
+precinct14   precinct14  0.19890271
+precinct60   precinct60  0.19792441
+precinct40   precinct40  0.19427555
+precinct121 precinct121  0.18979098
+precinct69   precinct69  0.17255743
+precinct72   precinct72  0.15577681
+precinct5     precinct5  0.15305997
+precinct44   precinct44  0.12449825
+precinct66   precinct66  0.11910515
+precinct78   precinct78  0.11572822
+precinct48   precinct48  0.10747505
+precinct122 precinct122  0.10515309
+precinct103 precinct103  0.10312386
+precinct13   precinct13  0.10181809
+precinct61   precinct61  0.10095302
+precinct25   precinct25  0.09427278
+precinct17   precinct17  0.09302557
+precinct83   precinct83  0.09241853
+precinct70   precinct70  0.08605934
+precinct71   precinct71  0.07863781
+precinct79   precinct79  0.07667810
+precinct94   precinct94  0.06911168
+precinct73   precinct73  0.06379186
+precinct10   precinct10  0.06106895
+precinct49   precinct49  0.05464441
+precinct62   precinct62  0.04644090
+precinct52   precinct52  0.04284309
+precinct45   precinct45  0.04249514
+precinct68   precinct68  0.03484521
+precinct112 precinct112  0.02980268
+precinct63   precinct63  0.02463990
+precinct46   precinct46  0.02227681
+precinct84   precinct84  0.02076182
+precinct120 precinct120  0.01784089
