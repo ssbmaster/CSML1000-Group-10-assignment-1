@@ -1,4 +1,10 @@
-# York-Machine-Learning
-Certificate in Machine Learning, York University
+# CSML1000-Group_10-Assignment_1
+Certificate in Machine Learning, York University School of Continuing Studies
 
-Assignment 1 Shiny App -- NYC Crash Prediction -- url: https://tony-l.shinyapps.io/NYCCrashPrediction/
+Project - NYC Crash Prediction
+
+Programmed in R.
+
+Shiny app - https://tony-l.shinyapps.io/NYCCrashPrediction/
+
+This project belongs to Alex Fung, Viswesh Krishnamurthy, Tony Lee, Patrick Osborne
